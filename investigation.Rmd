@@ -22,6 +22,8 @@ library(janitor)
 library(ggplot2)
 ```
 
+Question (for now) : "How temperatures affect the number of rented bikes"
+
 
 ```{r load-data}
 # load your data 
@@ -57,4 +59,19 @@ ggplot(seoul_bikes,
   theme_minimal()
 ```
 
+Initial Plots
+```{r}
+seoul_bikes |>  ggplot(data = _, mapping = aes(x = temperature_c, y = rented_bike_count)) +
+  geom_point(mapping = aes(color = holiday, alpha = visibility_10m, shape = seasons)) +
+  geom_smooth(se = FALSE) + 
+  facet_wrap( ~ holiday) +
+  labs(x = "Temperature",
+       y = "Rent Bike Count",
+       title = "How Temperatures Affects the Quantity of Bikes Rented",
+       colour = "Holiday",
+       shape = "Season",
+       alpha = "Visibility (10m)"
+      )
+#will need scaling later to make sure points are more visible
+```
 

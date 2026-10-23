@@ -29,6 +29,32 @@ seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="la
 seoul_bikes <- seoul_bikes_raw |> clean_names() #cleaning names to snake_case, as column headings' words initially separated with space
 seoul_bikes
 
+library(ggplot2)
+library(dplyr)
+
+seoul_bikes <- seoul_bikes %>%
+  mutate(
+    wind_group = cut(
+      wind_speed_m_s,
+      breaks = c(-Inf, 1, 2, 3, 4, Inf),
+      labels = c("0-1", "1-2", "2-3", "3-4", "4+")
+    )
+  )
+
+ggplot(seoul_bikes,
+       aes(x = wind_group,
+           y = rented_bike_count)) +
+  stat_summary(
+    fun = mean,
+    geom = "col",
+    fill = "steelblue"
+  ) +
+  labs(
+    title = "Average Bike Rentals at Different Wind Speeds",
+    x = "Wind Speed (m/s)",
+    y = "Average Number of Bikes Rented"
+  ) +
+  theme_minimal()
 ```
 
 

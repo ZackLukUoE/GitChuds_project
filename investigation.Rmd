@@ -20,6 +20,7 @@ library(tidyverse)
 library(readr)
 library(janitor)
 library(ggplot2)
+library(scales)
 ```
 
 Question (for now) : "How temperatures affect the number of rented bikes"
@@ -73,5 +74,20 @@ seoul_bikes |>  ggplot(data = _, mapping = aes(x = temperature_c, y = rented_bik
        alpha = "Visibility (10m)"
       )
 #will need scaling later to make sure points are more visible
+
+seoul_bikes |>  ggplot(data = _, mapping = aes(x = temperature_c, y = rented_bike_count)) +
+  geom_bin_2d()
+
+seoul_bikes |> ggplot(data = _, mapping = aes(x = rented_bike_count, fill = seasons)) +
+  geom_density(mapping = aes(alpha = 0.5)) +
+  facet_wrap(~ holiday, scales = "free") +
+  scale_y_continuous(labels = scales::comma)
+
+seoul_bikes |> ggplot(data = _, mapping = aes(x = rented_bike_count, fill = seasons)) +
+  geom_histogram(bins = 30) +
+  facet_grid(seasons ~ holiday, scales = "free")
+
+seoul_bikes |> ggplot(data = _, mapping = aes(x = seasons, y = rented_bike_count)) +
+  geom_boxplot()
 ```
 

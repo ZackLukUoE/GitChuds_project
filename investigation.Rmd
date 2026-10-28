@@ -23,7 +23,29 @@ library(ggplot2)
 library(scales)
 ```
 
-Question (for now) : "How temperatures affect the number of rented bikes"
+|Raw Variable Name| Clean Variable Name | Data Type| Numerical or Categorical | Description & Units |
+|:--- | :--- |:--- | :--- |:--- |
+|**Date**| date | chr | categorical | date in year-month-day format |
+|**Rented Bike Count**| rented_bike_count | dbl | numerical | count of bikes rented at each hour |
+|**Hour**| hour | dbl | numerical | hour of the day |
+|**Temperature**| temperature_c | dbl | numerical | temperature in Celsius |
+|**Humidity**| humidity_percent | dbl | numerical | humidity in percentage |
+|**Wind Speed**| wind_speed_m_s | dbl | numerical | wind speed in m/s |
+|**Visibility**| visibility_10m | dbl | numerical | visibility in 10m units |
+|**Dew Point Temperature**| dew_point_temperature_c | dbl | numerical | dew point temperature - temperature at which the air needs to be cooled to (at constant pressure) in order to achieve a relative humidity |
+|**Solar Radiation**| solar_radiation_mj_m2 | dbl | numerical | solar radiation in MJ/M^2 |
+|**Rainfall**| rainfall_mm | dbl | numerical | rainfall in mm |
+|**Snowfall**| snowfall_cm | dbl | numerical | snowfall in cm |
+|**Seasons**| seasons | chr | categorical | represents the four seasons |
+|**Holiday**| holiday | chr | categorical | holiday or no holiday |
+|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not|
+
+## Questions
+1. Does temperature affect bike demand differently during peak commuting hours (8-9am and 6-7pm) compared to off-peak hours? \
+2. Is the holiday effect uniform across seasons, or do holiday demand patterns shift significantly between the seasons? \
+3. Is there a sharp threshold or non-linear drop-off point where precipitation severly degrades demand, or is the decay linear? \
+4. How do temperature and humidity combine to affect demand (compared to just considering temperature)? \
+5. How does the hourly distribution shift between a regular working day and a non-working day?
 
 
 ```{r load-data}
@@ -106,10 +128,3 @@ seoul_bikes |> mutate(
   scale_y_continuous(labels = scales::comma)
 ```
 
-Questions:
-1. How temperature impacts count of rented bikes
-2. How seasons impact count of rented bikes
-3. Relationship of holidays and rented bike count
-4. How time of day affects rented bike count
-5. How snowfall affects rented bike count
-6. How rainfall affects rented bike count

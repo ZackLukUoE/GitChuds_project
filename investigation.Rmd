@@ -89,5 +89,27 @@ seoul_bikes |> ggplot(data = _, mapping = aes(x = rented_bike_count, fill = seas
 
 seoul_bikes |> ggplot(data = _, mapping = aes(x = seasons, y = rented_bike_count)) +
   geom_boxplot()
+
+seoul_bikes |> ggplot(mapping = aes(x = rented_bike_count, fill = holiday, alpha = 0.1)) +
+  geom_density()
+
+seoul_bikes |> ggplot(mapping = aes(x = hour, y = rented_bike_count)) +
+  geom_col() +
+  facet_grid(seasons ~ holiday, scales = "free") +
+  scale_y_continuous(labels = scales::comma)
+
+seoul_bikes |> mutate(
+  snow = ifelse(snowfall_cm == 0, FALSE, TRUE)
+) |> 
+  ggplot(mapping = aes(x = rented_bike_count, color = snow, alpha = 0.1)) +
+  geom_density() +
+  scale_y_continuous(labels = scales::comma)
 ```
 
+Questions:
+1. How temperature impacts count of rented bikes
+2. How seasons impact count of rented bikes
+3. Relationship of holidays and rented bike count
+4. How time of day affects rented bike count
+5. How snowfall affects rented bike count
+6. How rainfall affects rented bike count

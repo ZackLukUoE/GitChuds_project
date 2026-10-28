@@ -38,7 +38,7 @@ library(scales)
 |**Snowfall**| snowfall_cm | dbl | numerical | snowfall in cm |
 |**Seasons**| seasons | chr | categorical | represents the four seasons |
 |**Holiday**| holiday | chr | categorical | holiday or no holiday |
-|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not|
+|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not (will be cleaned away)|
 
 ## Questions
 1. Does temperature affect bike demand differently during peak commuting hours (8-9am and 6-7pm) compared to off-peak hours? \
@@ -62,7 +62,9 @@ seoul_bikes <- seoul_bikes_raw |> clean_names()
 #from this, we realise that there are no 
 
 seoul_bikes <- seoul_bikes |> filter_out(functioning_day == "No") |>  subset(select = -functioning_day)
-#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
+#seoul_bikes |> ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
+  #geom_col()
 
 seoul_bikes
 

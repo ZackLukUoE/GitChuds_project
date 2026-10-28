@@ -489,7 +489,7 @@ relative humidity</td>
 <td align="left">chr</td>
 <td align="left">categorical</td>
 <td align="left">yes or no; represents if system is fully operational or
-not</td>
+not (will be cleaned away)</td>
 </tr>
 </tbody>
 </table>
@@ -532,7 +532,9 @@ seoul_bikes &lt;- seoul_bikes_raw |&gt; clean_names()
 #from this, we realise that there are no 
 
 seoul_bikes &lt;- seoul_bikes |&gt; filter_out(functioning_day == &quot;No&quot;) |&gt;  subset(select = -functioning_day)
-#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
+#seoul_bikes |&gt; ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
+  #geom_col()
 
 seoul_bikes</code></pre>
 <pre><code>## # A tibble: 8,465 × 13

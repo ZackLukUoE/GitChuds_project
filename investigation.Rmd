@@ -49,37 +49,23 @@ library(scales)
 
 
 ```{r load-data}
-# load your data 
-seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="latin1")) #extracting raw data, locale needed to be specified as error otherwise.
-seoul_bikes <- seoul_bikes_raw |> clean_names() #cleaning names to snake_case, as column headings' words initially separated with space
+# load data 
+seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="latin1"))
+#extracting raw data, locale needed to be specified as error otherwise.
+
+#clean data
+seoul_bikes <- seoul_bikes_raw |> clean_names()
+#cleaning names to snake_case, as column headings' words initially separated with space
+
+#looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We run the following code to verify:
+#seoul_bikes |> filter(functioning_day == "No" & rented_bike_count > 0)
+#from this, we realise that there are no 
+
+seoul_bikes <- seoul_bikes |> filter_out(functioning_day == "No") |>  subset(select = -functioning_day)
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant
+
 seoul_bikes
 
-library(ggplot2)
-library(dplyr)
-
-seoul_bikes <- seoul_bikes %>%
-  mutate(
-    wind_group = cut(
-      wind_speed_m_s,
-      breaks = c(-Inf, 1, 2, 3, 4, Inf),
-      labels = c("0-1", "1-2", "2-3", "3-4", "4+")
-    )
-  )
-
-ggplot(seoul_bikes,
-       aes(x = wind_group,
-           y = rented_bike_count)) +
-  stat_summary(
-    fun = mean,
-    geom = "col",
-    fill = "steelblue"
-  ) +
-  labs(
-    title = "Average Bike Rentals at Different Wind Speeds",
-    x = "Wind Speed (m/s)",
-    y = "Average Number of Bikes Rented"
-  ) +
-  theme_minimal()
 ```
 
 Initial Plots
@@ -126,5 +112,29 @@ seoul_bikes |> mutate(
   ggplot(mapping = aes(x = rented_bike_count, color = snow, alpha = 0.1)) +
   geom_density() +
   scale_y_continuous(labels = scales::comma)
+
+seoul_bikes <- seoul_bikes %>%
+  mutate(
+    wind_group = cut(
+      wind_speed_m_s,
+      breaks = c(-Inf, 1, 2, 3, 4, Inf),
+      labels = c("0-1", "1-2", "2-3", "3-4", "4+")
+    )
+  )
+
+ggplot(seoul_bikes,
+       aes(x = wind_group,
+           y = rented_bike_count)) +
+  stat_summary(
+    fun = mean,
+    geom = "col",
+    fill = "steelblue"
+  ) +
+  labs(
+    title = "Average Bike Rentals at Different Wind Speeds",
+    x = "Wind Speed (m/s)",
+    y = "Average Number of Bikes Rented"
+  ) +
+  theme_minimal()
 ```
 

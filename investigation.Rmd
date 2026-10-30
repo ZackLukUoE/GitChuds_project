@@ -61,7 +61,7 @@ seoul_bikes <- seoul_bikes_raw |> clean_names()
 #seoul_bikes |> filter(functioning_day == "No" & rented_bike_count > 0)
 #from this, we realise that there are no 
 
-seoul_bikes <- seoul_bikes |> filter_out(functioning_day == "No") |>  subset(select = -functioning_day)
+seoul_bikes <- seoul_bikes |> filter(functioning_day != "No") |>  subset(select = -functioning_day)
 #after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
 #seoul_bikes |> ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
   #geom_col()

@@ -47,30 +47,116 @@ library(scales)
 4. How do temperature and humidity combine to affect demand (compared to just considering temperature)? \
 5. How does the hourly distribution shift between a regular working day and a non-working day?
 
-
+## Loading and Cleaning Data
 ```{r load-data}
 # load data 
 seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="latin1"))
 #extracting raw data, locale needed to be specified as error otherwise.
 
 #clean data
-seoul_bikes <- seoul_bikes_raw |> clean_names()
+seoul_bikes <- seoul_bikes_raw |> 
+  clean_names()
 #cleaning names to snake_case, as column headings' words initially separated with space
 
 #looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We run the following code to verify:
 #seoul_bikes |> filter(functioning_day == "No" & rented_bike_count > 0)
 #from this, we realise that there are no 
 
-seoul_bikes <- seoul_bikes |> filter(functioning_day != "No") |>  subset(select = -functioning_day)
+seoul_bikes <- seoul_bikes |> 
+  filter(functioning_day != "No") |>  
+  subset(select = -functioning_day)
 #after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
 #seoul_bikes |> ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
   #geom_col()
-
-seoul_bikes
-
 ```
 
-Initial Plots
+## Task 1 - Investigating the Effect of Temperature of Number of Rented Bikes During Peak or Non-Peak Hours
+
+### 1.1 Data Wrangling
+
+We define peak commuting hours as 8-9am and 6-7pm
+```{r}
+#Task 1
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    peak = ifelse(hour == 8 | hour == 9 | hour == 18 | hour == 19, TRUE, FALSE)
+  )
+```
+
+### 1.2a Data Visualisation (Scatterplot)
+
+```{r}
+#Task 1 - evaluating temperature sensitivty during peak hours vs. off-peak hours
+seoul_bikes |> 
+  ggplot(aes(x = temperature_c, y = rented_bike_count, alpha = 0.1, colour = ifelse(peak == TRUE, "#384860", "#97a6c4"))) +
+  geom_jitter() +
+  facet_wrap(
+    ~ peak,
+    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak"))
+    ) +
+  #changes labels from facetting to "Peak" and "Non-Peak"
+  theme_minimal() +
+  scale_colour_identity(
+    guide = "legend",
+    labels = c("Peak", "Non-Peak")
+    ) +
+  guides(alpha = "none") +
+  labs(
+    x = "Temperature (c)",
+    y = "Number of Rented Bikes",
+    colour = "Peak Commuting Hour (8-9am or 6-7pm)",
+    title = stringr::str_wrap("Temperature's Effect on the Number of Rented Bikes at Peak and Non-Peak Commuting Hours")
+    #needed str_wrap to ensure the entire title shows on the plot
+  )
+```
+
+From the difference in the opacities/ darkness of each colour, we can see that the dataset contains many more entries for non-peak hours than peak hours. We can also see this from the following code:
+
+```{r}
+seoul_bikes |> 
+  group_by(peak) |> 
+  count()
+```
+
+So, to analyse the behaviour of the data, we should instead consider the density plots:
+```{r}
+peak_maxes <- seoul_bikes |> 
+  filter(peak == TRUE) |> 
+  summarise(
+    density = list(density(temperature_c)),
+    max_y_high = max(density[[1]]$y),
+    x_at_max_y_high = density[[1]]$x[which.max(density[[1]]$y)],
+    max_y_low = max(density[[1]]$y[density[[1]]$x < 15]), # x < 15 as we know the peak is when the temperature is less than 15c
+    x_at_max_y_low = density[[1]]$x[which.max(density[[1]]$y)]
+  )
+
+#returns points where its highest points in distribution on the y axis are - we need this to locate the x coordinates which we will use to draw a vertical line
+#should generalise code into function, so less code redundancy when running for non-peak times
+
+#followed the following guide: https://ianmadd.github.io/pages/PeakDensityDistribution.html
+
+seoul_bikes |> 
+  ggplot(aes(x = temperature_c, alpha = 0.1, colour = ifelse(peak == TRUE, "#384860", "#97a6c4"))) +
+  geom_density(linewidth = 1) +
+  geom_vline(xintercept = density(seoul_bikes$temperature_c)$peak_maxes[3]) + #line not showing for some reason
+  theme_minimal() +
+  scale_colour_identity(
+    guide = "legend",
+    labels = c("Peak", "Non-Peak")
+    ) +
+  guides(alpha = "none") +
+  labs(
+    x = "Temperature (c)",
+    y = "Density",
+    colour = "Peak Commuting Hour (8-9am or 6-7pm)",
+    title = stringr::str_wrap("Temperature Distribution Comparison : Peak and Non-Peak Commuting Hours")
+    #needed str_wrap to ensure the entire title shows on the plot
+  )
+```
+
+Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points.
+
+## Initial Plots
 ```{r}
 seoul_bikes |>  ggplot(data = _, mapping = aes(x = temperature_c, y = rented_bike_count)) +
   geom_point(mapping = aes(color = holiday, alpha = visibility_10m, shape = seasons)) +

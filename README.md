@@ -17,8 +17,8 @@ This is a template repository for your group project. One of your group members 
 
 - Tasks: 30th October
   - Task 1 - compare temperature sensitivty during peak hours vs. off-peak hours
-  - [] Separate peak and non-peak hours in dataset (create a new variable and make it a logical variable)
-  - [] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
+  - [X] Separate peak and non-peak hours in dataset (create a new variable and make it a logical variable)
+  - [X] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
   - [] Infer
   
   - Task 2 - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday

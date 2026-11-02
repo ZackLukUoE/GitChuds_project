@@ -110,7 +110,9 @@ seoul_bikes |>
   )
 ```
 
-From the difference in the opacities/ darkness of each colour, we can see that the dataset contains many more entries for non-peak hours than peak hours. We can also see this from the following code:
+From the difference in the opacities/ darkness of each colour, we can see that the dataset contains many more entries for non-peak hours than peak hours.
+
+We can also see this from the following code:
 
 ```{r}
 seoul_bikes |> 
@@ -118,27 +120,46 @@ seoul_bikes |>
   count()
 ```
 
-So, to analyse the behaviour of the data, we should instead consider the density plots:
-```{r}
-peak_maxes <- seoul_bikes |> 
-  filter(peak == TRUE) |> 
-  summarise(
-    density = list(density(temperature_c)),
-    max_y_high = max(density[[1]]$y),
-    x_at_max_y_high = density[[1]]$x[which.max(density[[1]]$y)],
-    max_y_low = max(density[[1]]$y[density[[1]]$x < 15]), # x < 15 as we know the peak is when the temperature is less than 15c
-    x_at_max_y_low = density[[1]]$x[which.max(density[[1]]$y)]
-  )
+However, we can already see there might be similarities in the pattern or the shape of the data represented above, where unimodal, asymmetric clusters can be seen for the two groups.
 
-#returns points where its highest points in distribution on the y axis are - we need this to locate the x coordinates which we will use to draw a vertical line
-#should generalise code into function, so less code redundancy when running for non-peak times
+To be more specific, we shall analyse the behaviour of the data, we should instead consider the density plots:
+```{r}
+determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
+  density_df <- df |>
+    filter({{ max_var }} == max_var_condition) |>
+    pull({{ density_var }}) |> 
+    density() |> 
+    (\(d) tibble::tibble(x = d$x, y = d$y))()
+    #creating a separate data frame for density values
+  
+    high_peak <- density_df |> filter(y == max(y))
+    low_peak <- density_df |> filter(x < 15) |> filter(y == max(y))
+    
+    tibble::tibble(
+      max_y_high = high_peak$y,
+      x_at_max_y_high = high_peak$x,
+      max_y_low = low_peak$y,
+      x_at_max_y_low = low_peak$x
+    )
+    #returns values in tibble form
+}
+#needed to use {{}} as passing in the column names and not variable objects
+
+peak_maxes<- determine_density_maxes(seoul_bikes, peak, TRUE, temperature_c)
+non_peak_maxes <- determine_density_maxes(seoul_bikes, peak, FALSE, temperature_c)
+
+peak_maxes
+non_peak_maxes
 
 #followed the following guide: https://ianmadd.github.io/pages/PeakDensityDistribution.html
 
 seoul_bikes |> 
   ggplot(aes(x = temperature_c, alpha = 0.1, colour = ifelse(peak == TRUE, "#384860", "#97a6c4"))) +
   geom_density(linewidth = 1) +
-  geom_vline(xintercept = density(seoul_bikes$temperature_c)$peak_maxes[3]) + #line not showing for some reason
+  geom_vline(xintercept = peak_maxes$x_at_max_y_high, linetype = "dashed", colour = "#384860") +
+  geom_vline(xintercept = peak_maxes$x_at_max_y_low, linetype = "dashed", colour = "#384860") +
+  geom_vline(xintercept = non_peak_maxes$x_at_max_y_high, linetype = "dotted", colour = "#97a6c4") +
+  geom_vline(xintercept = non_peak_maxes$x_at_max_y_low, linetype = "dotted", colour = "#97a6c4") +
   theme_minimal() +
   scale_colour_identity(
     guide = "legend",
@@ -154,7 +175,36 @@ seoul_bikes |>
   )
 ```
 
-Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points.
+Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points. Each peak in each of the density plots are highlighted by the vertical dashed or dotted line passing through them, with the corresponding colours matching if it is for the peak times or non-peak times plots.
+
+We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left. We shall now also consider the summary statistics:
+
+```{r}
+peak_summary_statistics <- function(df, var, condition, statistic){
+  df |> 
+    filter({{ var }} == condition) |> 
+    summarise(
+      mean = mean({{ statistic }}),
+      median = median({{ statistic }}),
+      sd = sd({{ statistic }}),
+      iqr = IQR({{ statistic }})
+    )
+}
+
+peak_summary <- peak_summary_statistics(seoul_bikes, peak, TRUE, temperature_c)
+non_peak_summary <- peak_summary_statistics(seoul_bikes, peak, FALSE, temperature_c)
+
+peak_summary
+non_peak_summary
+```
+When we have a closer look at the mean, median, standard deviation and the interquartile range between peak and non-peak hour entries, all summary statistics are already extremely close to one another, and may differ only as a result of usual sampling noise and the differences in sampling sizes.
+
+Considering the fact that we cannot see any clear distinctions between the popularity of rented bikes at different temperatures when taking peak and non-peak commuting hours into account, nor the spread of the data, we may conclude that **temperature behaves in an uniform way no matter whether during peak times or not, with said pattern being that when the temperature with the most bikes rented being between 20-22 degrees Celsius.**
+
+Notes:
+Maybe can bootstrap to get specific temp value for where most bikes are rented?
+Re-think what density plot really shows and the original plot, as well as summary statistics - maybe they are not as useful as I thought they were
+
 
 ## Initial Plots
 ```{r}

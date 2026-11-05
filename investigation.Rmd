@@ -212,26 +212,8 @@ seoul_bikes |>
 
 Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points. Each peak in each of the density plots are highlighted by the vertical dashed or dotted line passing through them, with the corresponding colours matching if it is for the peak times or non-peak times plots.
 
-We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left. We shall now also consider the summary statistics:
-
-```{r}
-peak_summary_statistics <- function(df, var, statistic){
-  df |> 
-    group_by({{ var }}) |> 
-    summarise(
-      mean = mean({{ statistic }}),
-      median = median({{ statistic }}),
-      sd = sd({{ statistic }}),
-      iqr = IQR({{ statistic }}),
-      max = max({{ statistic }}),
-      min = min({{ statistic }})
-    )
-}
-
-summary <- peak_summary_statistics(seoul_bikes, peak, temperature_c)
-summary
+We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left.
 ```
-
 
 ## Initial Plots
 ```{r}

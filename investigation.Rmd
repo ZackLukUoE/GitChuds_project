@@ -60,14 +60,11 @@ seoul_bikes <- seoul_bikes_raw |>
 
 #looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We run the following code to verify:
 #seoul_bikes |> filter(functioning_day == "No" & rented_bike_count > 0)
-#from this, we realise that there are no 
 
 seoul_bikes <- seoul_bikes |> 
   filter(functioning_day != "No") |>  
   subset(select = -functioning_day)
-#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
-#seoul_bikes |> ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
-  #geom_col()
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.
 ```
 
 ## Task 1 - Investigating the Effect of Temperature of Number of Rented Bikes During Peak or Non-Peak Hours
@@ -100,9 +97,9 @@ seoul_bikes |>
     linewidth = 1.2,
     colour = "#d95f02"
     ) +
-  facet_wrap(
-    ~ peak,
-    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak"))
+  facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
+    holiday ~ peak,
+    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +

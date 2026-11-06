@@ -24,12 +24,12 @@ This is a template repository for your group project. One of your group members 
   - [] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
   - [] Infer
   
-  - Task 3 - Identify if precipitation drops demand linearly or shows a sharp threshold
+  - Task 3 (Daniel) - Identify if precipitation drops demand linearly or shows a sharp threshold
   - [] Filter for days where rainfall and snowfall > 0
   - [] Created box plots of precipitation levels vs. rented_bike_count
   - [] Infer
   
-  - Task 4 - Analyse interaction effects between temperature and humidity
+  - Task 4 (Ethan) - Analyse interaction effects between temperature and humidity
   - [] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   

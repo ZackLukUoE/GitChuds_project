@@ -214,7 +214,62 @@ We can see that both plots resemble the same shape, essentially an "M", where th
 This may indicate how the relative proportions of how bike-renters reacting to changes in temperatures are almost identical across peak and off-peak commuting hours.
 
 From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are perceived are lower. 
+#Task 3
+# 3.1. Load the full Seoul Bike CSV.
+bikes <- read.csv(file.choose(), check.names = FALSE, fileEncoding = "latin1")
 
+# 3.2 Keep only hours when the bike rental service was operating.
+bikes <- subset(bikes, `Functioning Day` == "Yes")
+
+# 3.3 Each row represents one hour. | means OR, and & means AND.
+wet_hours <- subset(bikes, `Rainfall(mm)` > 0 | `Snowfall (cm)` > 0)
+both_hours <- subset(bikes, `Rainfall(mm)` > 0 & `Snowfall (cm)` > 0)
+
+nrow(wet_hours)
+nrow(both_hours)
+
+# 3.4 Compare rain and snow separately, keeping dry hours in both plots.
+rain_data <- subset(bikes, `Snowfall (cm)` == 0)
+snow_data <- subset(bikes, `Rainfall(mm)` == 0)
+
+# 3.5 cut() groups the measurements into bands.
+
+rain_data$rain_level <- cut(
+  rain_data$`Rainfall(mm)`,
+  breaks = c(-Inf, 0, 1, 5, 10, Inf),
+  labels = c("0", "(0, 1]", "(1, 5]", "(5, 10]", ">10")
+)
+
+snow_data$snow_level <- cut(
+  snow_data$`Snowfall (cm)`,
+  breaks = c(-Inf, 0, 1, 3, 5, Inf),
+  labels = c("0", "(0, 1]", "(1, 3]", "(3, 5]", ">5")
+)
+
+boxplot(
+  `Rented Bike Count` ~ rain_level,
+  data = rain_data,
+  main = "Bike rentals by rainfall level",
+  xlab = "Rainfall (mm)",
+  ylab = "Hourly bike rentals",
+  col = "lightblue"
+)
+
+boxplot(
+  `Rented Bike Count` ~ snow_level,
+  data = snow_data,
+  main = "Bike rentals by snowfall level",
+  xlab = "Snowfall (cm)",
+  ylab = "Hourly bike rentals",
+  col = "lightgrey"
+)
+
+# 3.6 Check the number of hours and the median rentals in each band.
+table(rain_data$rain_level)
+tapply(rain_data$`Rented Bike Count`, rain_data$rain_level, median, na.rm = TRUE)
+
+table(snow_data$snow_level)
+tapply(snow_data$`Rented Bike Count`, snow_data$snow_level, median, na.rm = TRUE)
 ## Task 4 
 ```{r}
 seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,

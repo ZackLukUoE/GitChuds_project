@@ -217,6 +217,7 @@ We can see that both plots resemble the same shape, essentially an "M", where th
 This may indicate how the relative proportions of how bike-renters reacting to changes in temperatures are almost identical across peak and off-peak commuting hours.
 
 From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are perceived are lower. 
+
 ## Task 4 
 ```{r}
 seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
@@ -231,7 +232,7 @@ seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
                                title = "Bikes Rented according to Temperature and Humidity")
 
 ```
-
+Looking at the graph, we can see that bikes are rented most when temperature is between 20 and 25 degrees and humidity is relatively low. The sales drop off to often below 500 bikes rented per hour on average whenever temperature is below zero regardless of humidity, and there is a similar drop off when humidity nears 100% although to a less extreme extent. This implies that temperature is a greater concern when people are deciding whether or not to rent bikes, which makes intuitive sense as it is a more immediately noticeable factor.
 
 ## Initial Plots
 ```{r}

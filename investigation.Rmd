@@ -74,12 +74,13 @@ seoul_bikes <- seoul_bikes |>
 
 ### 1.1 Data Wrangling
 
-We define peak commuting hours as 8-9am and 6-7pm
+We define peak commuting hours as 7-9am and 5-7pm
 ```{r}
 #Task 1
 seoul_bikes <- seoul_bikes |> 
   mutate(
-    peak = ifelse(hour == 8 | hour == 9 | hour == 18 | hour == 19, TRUE, FALSE)
+    peak = ifelse(hour %in% c(7:9, 17:19), TRUE, FALSE)
+    #used Gemini to help with shortening the conditional statement, as initially was hour == 7 | hour == 8 | ... 
   )
 ```
 
@@ -88,29 +89,38 @@ seoul_bikes <- seoul_bikes |>
 ```{r}
 #Task 1 - evaluating temperature sensitivty during peak hours vs. off-peak hours
 seoul_bikes |> 
-  ggplot(aes(x = temperature_c, y = rented_bike_count, alpha = 0.1, colour = ifelse(peak == TRUE, "#384860", "#97a6c4"))) +
-  geom_jitter() +
+  ggplot(aes(x = temperature_c, y = rented_bike_count)) +
+  geom_jitter(
+    aes(colour = peak),
+    alpha = 0.15
+  ) +
+  geom_smooth(
+    method = "gam",
+    se = FALSE,
+    linewidth = 1.2,
+    colour = "#d95f02"
+    ) +
   facet_wrap(
     ~ peak,
     labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak"))
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +
-  scale_colour_identity(
+  scale_colour_manual(
     guide = "legend",
-    labels = c("Peak", "Non-Peak")
+    values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
+    labels = c("TRUE" = "Peak", "FALSE" = "Non-Peak")
     ) +
   guides(alpha = "none") +
   labs(
     x = "Temperature (c)",
-    y = "Number of Rented Bikes",
-    colour = "Peak Commuting Hour (8-9am or 6-7pm)",
-    title = stringr::str_wrap("Temperature's Effect on the Number of Rented Bikes at Peak and Non-Peak Commuting Hours")
-    #needed str_wrap to ensure the entire title shows on the plot
+    y = "Number of Rented Bikes Per Hour",
+    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
+    title = "Bike Demand Sensitivity to Temperature"
   )
 ```
 
-From the difference in the opacities/ darkness of each colour, we can see that the dataset contains many more entries for non-peak hours than peak hours.
+From the difference in the opacities/ darkness of each scatterplot, we can see that the dataset contains many more entries for non-peak hours than peak hours.
 
 We can also see this from the following code:
 
@@ -122,7 +132,31 @@ seoul_bikes |>
 
 However, we can already see there might be similarities in the pattern or the shape of the data represented above, where unimodal, asymmetric clusters can be seen for the two groups.
 
-To be more specific, we shall analyse the behaviour of the data, we should instead consider the density plots:
+From the points during peak commuting hours, we see its maximum is much higher than that of the non-peak hours, the values specifically are 3556 vs. 2579 bikes/ hour.
+
+On average, we also see that the number of rented bikes per hour is significantly higher during peak hours, with the means being approx. 1052 vs. 621, and the medians being 867 vs. 440.
+
+The spread of data between peak and non-peak hours are also quite different, where the standard deviation for peak and non-peak hours are approx. 798 vs. 540 bikes/ hour and the interquartile range being approx 1290 vs. 772. This may suggest that the number of bikes that are rented during off peak times might be less predictable or less stable. However, it must also be noted that we have not removed holidays from this plot, so the peak hours may also include weekends and holidays, where no work is conducted. The spread of data exclusively on working days may be less spread out for peak times in particular.
+
+Additionally, if we consider the GAM line on the scatterplot, we see that the line for the peak hours are much steeper than that of the non-peak hours, which may suggest that temperature acts as a stronger multiplier during peak hours.
+
+We also see that the resiliance of commuters during lower temperatures (colder weather) at peak times is stronger, this would imply that commuters are less likely to not commute with bikes, as they must get to work or get to school on time. Conversely, for those during off-peak hours, the lower coldness tolerance may suggest they are less reliant on renting bikes and may choose to stay indoors or opt for another form of transport entirely.
+
+Back to the similarities, we see that at high heat, the number of rented bikes per hour drop off. This means that once a threshold of around 30 degrees C is hit, even the peak commuters will choose another way of commuting, likely travelling with transportation offerring air-conditioning, e.g. busses or the metro.
+```{r}
+seoul_bikes |> 
+  group_by(peak) |> 
+  summarise(
+    max = max(rented_bike_count),
+    min = min(rented_bike_count),
+    mean = mean(rented_bike_count),
+    median = median(rented_bike_count),
+    sd = sd(rented_bike_count),
+    iqr = IQR(rented_bike_count)
+  )
+```
+
+To be more specific, we shall analyse the distribution of the data, we should instead consider the density plots:
 ```{r}
 determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
   density_df <- df |>
@@ -142,8 +176,9 @@ determine_density_maxes <- function(df, max_var, max_var_condition, density_var)
       x_at_max_y_low = low_peak$x
     )
     #returns values in tibble form
+    
 }
-#needed to use {{}} as passing in the column names and not variable objects
+#needed to use {{}} as passing in the column names and not variable objects - Gemini was used, as it was initially causing errors
 
 peak_maxes<- determine_density_maxes(seoul_bikes, peak, TRUE, temperature_c)
 non_peak_maxes <- determine_density_maxes(seoul_bikes, peak, FALSE, temperature_c)
@@ -177,34 +212,11 @@ seoul_bikes |>
 
 Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points. Each peak in each of the density plots are highlighted by the vertical dashed or dotted line passing through them, with the corresponding colours matching if it is for the peak times or non-peak times plots.
 
-We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left. We shall now also consider the summary statistics:
+We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left.
 
-```{r}
-peak_summary_statistics <- function(df, var, condition, statistic){
-  df |> 
-    filter({{ var }} == condition) |> 
-    summarise(
-      mean = mean({{ statistic }}),
-      median = median({{ statistic }}),
-      sd = sd({{ statistic }}),
-      iqr = IQR({{ statistic }})
-    )
-}
+This may indicate how the relative proportions of how bike-renters reacting to changes in temperatures are almost identical across peak and off-peak commuting hours.
 
-peak_summary <- peak_summary_statistics(seoul_bikes, peak, TRUE, temperature_c)
-non_peak_summary <- peak_summary_statistics(seoul_bikes, peak, FALSE, temperature_c)
-
-peak_summary
-non_peak_summary
-```
-When we have a closer look at the mean, median, standard deviation and the interquartile range between peak and non-peak hour entries, all summary statistics are already extremely close to one another, and may differ only as a result of usual sampling noise and the differences in sampling sizes.
-
-Considering the fact that we cannot see any clear distinctions between the popularity of rented bikes at different temperatures when taking peak and non-peak commuting hours into account, nor the spread of the data, we may conclude that **temperature behaves in an uniform way no matter whether during peak times or not, with said pattern being that when the temperature with the most bikes rented being between 20-22 degrees Celsius.**
-
-Notes:
-Maybe can bootstrap to get specific temp value for where most bikes are rented?
-Re-think what density plot really shows and the original plot, as well as summary statistics - maybe they are not as useful as I thought they were
-
+From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are perceived are lower. 
 ## Task 4 
 ```{r}
 seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
@@ -219,6 +231,7 @@ seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
                                title = "Bikes Rented according to Temperature and Humidity")
 
 ```
+
 
 ## Initial Plots
 ```{r}

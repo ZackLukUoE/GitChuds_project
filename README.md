@@ -13,25 +13,23 @@ This is a template repository for your group project. One of your group members 
 
 ## Task list
 
-(Optional) Use the space below to structure your group project and to distribute tasks amongst members. It is not expected that every member makes a contribution to each component of the investigation, but you should aim to share the work fairly that utilises each other's strengths (eg. coding, analysis, report writing, etc.)
-
 - Tasks: 30th October
-  - Task 1 - compare temperature sensitivty during peak hours vs. off-peak hours
+  - Task 1 (Zack) - compare temperature sensitivty during peak hours vs. off-peak hours
   - [X] Separate peak and non-peak hours in dataset (create a new variable and make it a logical variable)
   - [X] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
-  - [] Infer
+  - [X] Infer
   
   - Task 2 - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
   - [] Calculate an average hourly demand, grouped by seasons and holiday
   - [] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
   - [] Infer
   
-  - Task 3 - Identify if precipitation drops demand linearly or shows a sharp threshold
+  - Task 3 (Daniel) - Identify if precipitation drops demand linearly or shows a sharp threshold
   - [] Filter for days where rainfall and snowfall > 0
   - [] Created box plots of precipitation levels vs. rented_bike_count
   - [] Infer
   
-  - Task 4 - Analyse interaction effects between temperature and humidity
+  - Task 4 (Ethan) - Analyse interaction effects between temperature and humidity
   - [] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   
@@ -39,6 +37,9 @@ This is a template repository for your group project. One of your group members 
   - [] Use the working day variable to separate weekdays and weekends/ holidays
   - [] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
   - [] Infer
+  
+- Big Question
+How resilient is the demand for rented bikes to adverse weather conditions across different functional time windows (e.g. peak commuting hours vs. weekend leisure hours)?
 
 # Check-in
 

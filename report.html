@@ -11,9 +11,9 @@
 
 <meta name="author" content="by GitChuds: Ethan, Miles, Freddie, Daniel &amp; Zack" />
 
-<meta name="date" content="2026-10-28" />
+<meta name="date" content="2026-11-06" />
 
-<title>Project title</title>
+<title>Magnitude of Weather’s Impact on Demand for Rented Bikes Across Functional Time Windows</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,18 +350,50 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Project title</h1>
+<h1 class="title toc-ignore">Magnitude of Weather’s Impact on Demand for
+Rented Bikes Across Functional Time Windows</h1>
 <h4 class="author">by GitChuds: Ethan, Miles, Freddie, Daniel &amp;
 Zack</h4>
-<h4 class="date">2026-10-28</h4>
+<h4 class="date">2026-11-06</h4>
 
 </div>
 
 
+<pre class="r"><code># load data 
+seoul_bikes_raw &lt;- read_csv(&quot;data/SeoulBikeData.csv&quot;, locale=locale(encoding=&quot;latin1&quot;))</code></pre>
+<pre><code>## Rows: 8760 Columns: 14
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (4): Date, Seasons, Holiday, Functioning Day
+## dbl (10): Rented Bike Count, Hour, Temperature(°C), Humidity(%), Wind speed ...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>#extracting raw data, locale needed to be specified as error otherwise.
+
+#clean data
+seoul_bikes &lt;- seoul_bikes_raw |&gt; 
+  clean_names()
+#cleaning names to snake_case, as column headings&#39; words initially separated with space
+
+#looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We can run the following code to verify:
+seoul_bikes |&gt;
+  filter(functioning_day == &quot;No&quot; &amp; rented_bike_count &gt; 0)</code></pre>
+<pre><code>## # A tibble: 0 × 14
+## # ℹ 14 variables: date &lt;chr&gt;, rented_bike_count &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   temperature_c &lt;dbl&gt;, humidity_percent &lt;dbl&gt;, wind_speed_m_s &lt;dbl&gt;,
+## #   visibility_10m &lt;dbl&gt;, dew_point_temperature_c &lt;dbl&gt;,
+## #   solar_radiation_mj_m2 &lt;dbl&gt;, rainfall_mm &lt;dbl&gt;, snowfall_cm &lt;dbl&gt;,
+## #   seasons &lt;chr&gt;, holiday &lt;chr&gt;, functioning_day &lt;chr&gt;</code></pre>
+<pre class="r"><code>seoul_bikes &lt;- seoul_bikes |&gt; 
+  filter(functioning_day != &quot;No&quot;) |&gt;  
+  subset(select = -functioning_day)
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.</code></pre>
 <div id="research-question" class="section level2">
 <h2>Research Question</h2>
-<p>Describe your research question here. Include why this question might
-be of interest.</p>
+<p><strong>How resilient is the demand for rented bikes to adverse
+weather conditions across different functional time windows (e.g. peak
+commuting hours vs. weekend leisure hours)?</strong></p>
 </div>
 <div id="data" class="section level2">
 <h2>Data</h2>

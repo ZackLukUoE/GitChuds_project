@@ -1,5 +1,5 @@
 ---
-title: "Project title"
+title: "Magnitude of Weather's Impact on Demand for Rented Bikes Across Functional Time Windows"
 author: "by GitChuds: Ethan, Miles, Freddie, Daniel & Zack"
 date: "`r Sys.Date()`"
 output: html_document
@@ -12,26 +12,37 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-lib, include = FALSE}
 library(tidyverse)
-# Add any other libraries here
-
-
-
+library(readr)
+library(janitor)
+library(ggplot2)
+library(scales)
 ```
 
 
-```{r load-data, include=FALSE}
-# load your data here and any pre-processing/cleaning 
-#  that you need for your report.
+```{r load-data, include=TRUE}
+# load data 
+seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="latin1"))
+#extracting raw data, locale needed to be specified as error otherwise.
 
+#clean data
+seoul_bikes <- seoul_bikes_raw |> 
+  clean_names()
+#cleaning names to snake_case, as column headings' words initially separated with space
 
+#looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We can run the following code to verify:
+seoul_bikes |>
+  filter(functioning_day == "No" & rented_bike_count > 0)
 
-
+seoul_bikes <- seoul_bikes |> 
+  filter(functioning_day != "No") |>  
+  subset(select = -functioning_day)
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.
 ```
 
 
 ## Research Question
 
-Describe your research question here. Include why this question might be of interest. 
+**How resilient is the demand for rented bikes to adverse weather conditions across different functional time windows (e.g. peak commuting hours vs. weekend leisure hours)?**
 
 
 

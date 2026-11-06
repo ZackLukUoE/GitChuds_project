@@ -30,7 +30,7 @@ This is a template repository for your group project. One of your group members 
   - [] Infer
   
   - Task 4 (Ethan) - Analyse interaction effects between temperature and humidity
-  - [] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
+  - [X] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   
   - Task 5 (Freddie)- Compare the 24 hour rented bike profile during the week vs. weekends or holidays - you will probably need the lubridate package

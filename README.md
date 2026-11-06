@@ -19,7 +19,7 @@ This is a template repository for your group project. One of your group members 
   - [X] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
   - [X] Infer
   
-  - Task 2 - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
+  - Task 2 (Miles) - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
   - [] Calculate an average hourly demand, grouped by seasons and holiday
   - [] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
   - [] Infer
@@ -33,7 +33,7 @@ This is a template repository for your group project. One of your group members 
   - [] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   
-  - Task 5 - Compare the 24 hour rented bike profile during the week vs. weekends or holidays
+  - Task 5 (Freddie)- Compare the 24 hour rented bike profile during the week vs. weekends or holidays - you will probably need the lubridate package
   - [] Use the working day variable to separate weekdays and weekends/ holidays
   - [] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
   - [] Infer

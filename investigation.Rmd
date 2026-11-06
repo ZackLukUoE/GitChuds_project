@@ -205,6 +205,20 @@ Notes:
 Maybe can bootstrap to get specific temp value for where most bikes are rented?
 Re-think what density plot really shows and the original plot, as well as summary statistics - maybe they are not as useful as I thought they were
 
+## Task 4 
+```{r}
+seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
+                          z = rented_bike_count
+                      )) + stat_summary_2d(
+                        fun = mean, aes(fill
+                                        = after_stat(value))
+                      ) + scale_fill_viridis_c() + 
+                          labs(x = "Temperature (Degrees Celsius)",
+                               y = "Humidity (%)",
+                               fill = "Rented Bike Count",
+                               title = "Bikes Rented according to Temperature and Humidity")
+
+```
 
 ## Initial Plots
 ```{r}

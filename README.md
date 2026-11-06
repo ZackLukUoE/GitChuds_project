@@ -33,11 +33,7 @@ This is a template repository for your group project. One of your group members 
   - [X] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   
-<<<<<<< HEAD
-  - Task 5 (Freddie) - Compare the 24 hour rented bike profile during the week vs. weekends or holidays
-=======
   - Task 5 (Freddie)- Compare the 24 hour rented bike profile during the week vs. weekends or holidays - you will probably need the lubridate package
->>>>>>> 9c6ead70418e3e4c0d8e8a84cbebf2cee06637d3
   - [] Use the working day variable to separate weekdays and weekends/ holidays
   - [] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
   - [] Infer

@@ -213,6 +213,10 @@ seoul_bikes |>
 Just looking at the shape of the curves, they are both clearly bimodal (i.e. two distinct peaks) and at specific points. Each peak in each of the density plots are highlighted by the vertical dashed or dotted line passing through them, with the corresponding colours matching if it is for the peak times or non-peak times plots.
 
 We can see that both plots resemble the same shape, essentially an "M", where the right peak is slightly higher than the one on the left.
+
+This may indicate how the relative proportions of how bike-renters reacting to changes in temperatures are almost identical across peak and off-peak commuting hours.
+
+From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are percieved to be lower.
 ```
 
 ## Initial Plots

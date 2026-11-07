@@ -248,8 +248,7 @@ ggplot(holiday_comparison,
     x = "Holiday vs Non-Holiday",
     y = "Average number of bikes rented"
   ) +
-  theme_minimal() +
-  theme(legend.position = "none")
+  theme_minimal()
 ```
 
 Observations: Very simple bar chart and code shows that on average there is more bike rentals during non-holiday days vs holiday days. Is this suprising? For me it was slightly suprising (presuming this is seouls holiday) you might have thought people get out and about explore the city more, if tourists come over you definetly might presume they rent out bikes. On the contrary many workers may leave the city for the holiday and therefore bike rental decreases. The no holiday rental was 739 compared to holiday rental average of 529. 39.7% difference ((739-529)/529)x100. Regular commuting patterns may also explain this. We can't determine the cause though with this one data viz.
@@ -267,6 +266,7 @@ season_holiday_comparison <- seoul_bikes %>%
 #2.4 Grouped bar chart of seasonal data
 ```{r}
 ggplot(season_holiday_comparison,
+       # Used factor() to display seasons in chronological order on x-axis instead of alphabetical
        aes(x = factor(seasons,
                       levels = c("Winter", "Spring",
                                  "Summer", "Autumn")),
@@ -283,8 +283,25 @@ ggplot(season_holiday_comparison,
 ```
 
 
+Observations:
+This grouped bar chart shows how the average bike rentals varies between holidays and non-holidays across the four seasons. Summer has the highest average rentals, with roughly the same number in each category, whereas winter has the lowest. Autumn shows slighlty higher average rentals on holidays while summer shows minimal diffecences. Ocerall, the findings suggest that seasonal variation has stronger association with bike rental  demand rather than holiday status (variation between holiday vs non holiday is small in each season whereas the average bike rentals is bigger)
+Seasons   Holiday        avg_rentals
+1 Autumn  Holiday           948.
+2 Autumn  No Holiday        923.
+3 Spring  Holiday           635.
+4 Spring  No Holiday        750.
+5 Summer  Holiday          1022.
+6 Summer  No Holiday       1034.
+7 Winter  Holiday           157.
+8 Winter  No Holiday        232.
 
+Earlier analysis showed that non-holidays had 39.7% higher average rentals overall, the seasonal breakdown proves this relationship is not consitent throughout the year.
+Winter 47.8% higher
+Spring 18.1% higher
+Summer 1.2% higher
+Autmun -2.6% lower
 
+Can temperature explain the seasonal differences in this demand?
 
 
 

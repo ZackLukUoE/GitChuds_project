@@ -217,14 +217,42 @@ From the peaks of the density plots, we may also infer that bike-renters (unsurp
 
 #Task 2
 Determining if the drop in demand for rented bikes is consistent across all four seasons(Specifically when it is a holiday).
-Is the holiday effect uniform across seasons, or do holiday demand patterns shift significantly between the seasons?
-Calculate average hourly demand, grouped by seasons and holidays
-Plot a bar chart using geom_col(position = 'dodge') to create plots side by side. 
-Infer answers.
 
+Is the effect of holidays on bike rental demand is consistent across all four seasons?
 
+Does adverse weather have a consistent impact on bike rental demand during holidays across all four seasons?
 
+I'll need to group data
+- season
+- holiday
+- hour 
+compare vs non-holiday in each season
+visualise results
+work out percentages/mean differences in data that allows a conclusion
+# 2.1 Grouping data by rented bike count holiday vs no holiday
+```{r}
+holiday_comparison <- seoul_bikes %>%
+  group_by(holiday) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+   )
+```
 
+#2.2 Bar chart of rented bike count holiday vs no holiday
+```{r}
+ggplot(holiday_comparison,
+       aes(x = holiday, y = avg_rentals, fill = holiday)) +
+  geom_col() +
+  labs(
+    title = "Average bike rentals during a holiday vs non-holiday",
+    x = "Holiday vs Non-Holiday",
+    y = "Average number of bikes rented"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Observations: Very simple bar chart and code shows that on average there is more bike rentals during non-holiday days vs holiday days. Is this suprising? For me it was slightly suprising (presuming this is seouls holiday) you might have thought people get out and about explore the city more, if tourists come over you definetly might presume they rent out bikes. On the contrary many workers may leave the city for the holiday and therefore bike rental decreases. The no holiday rental was 739 compared to holiday rental average of 529. 39.7% difference ((739-529)/529)x100. Regular commuting patterns may also explain this. We can't determine the cause though with this one data viz.
 
 #Task 3
 # 3.1. Load the full Seoul Bike CSV.

@@ -303,12 +303,51 @@ Autmun -2.6% lower
 
 Can temperature explain the seasonal differences in this demand?
 
+#2.5 Grouping data by season, holiday and hour
+```{r}
+hourly_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday, hour) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+   )
+```
+From 2.1 all of the rest is very repeatable data - which is something important in R.
+#2.6 Data visualisation
+```{r}
+ggplot(hourly_holiday_comparison,
+       aes(x = hour, y = avg_rentals,
+           colour = holiday)) +
+  # Used geom_line() instead of geom_col() because I'm now investigating how rentals change throughout the day.
+  geom_line(linewidth = 1) +
+  # Used facet_wrap() for easier comparison
+  facet_wrap(
+    ~factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+    #added axes = "all_x" by asking GenAi because I wanted all graphs to have x-axis only the bottom 2 originally had it.
+    axes = "all_x"
+  )+
+  scale_x_continuous(breaks = seq(0, 23, 3)) +
 
+  labs(
+    title = "Hourly average bike rentals by season and type of holiday",
+    x = "Hour of day",
+    y = "Average number of bikes rented",
+    colour = "Holiday type"
+  ) +
+  theme_minimal() 
+```
+Bimodals in the non-holiday lines.
+Holiday lines no clear comparisons.
+Morning peak around 8am on non-holidays
+Evening peak around 6pm
+Holiday rentals generally more evenly distributed
 
-
-
-
-
+Next steps - write out cleaner observations
+Explore: 
+Can temperature explain the seasonal differences in this demand?
+How does it link to the big question.
 #Task 3
 # 3.1. Load the full Seoul Bike CSV.
 bikes <- read.csv(file.choose(), check.names = FALSE, fileEncoding = "latin1")

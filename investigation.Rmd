@@ -254,6 +254,44 @@ ggplot(holiday_comparison,
 
 Observations: Very simple bar chart and code shows that on average there is more bike rentals during non-holiday days vs holiday days. Is this suprising? For me it was slightly suprising (presuming this is seouls holiday) you might have thought people get out and about explore the city more, if tourists come over you definetly might presume they rent out bikes. On the contrary many workers may leave the city for the holiday and therefore bike rental decreases. The no holiday rental was 739 compared to holiday rental average of 529. 39.7% difference ((739-529)/529)x100. Regular commuting patterns may also explain this. We can't determine the cause though with this one data viz.
 
+#2.3 Grouping data with seasons now included
+```{r}
+season_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+#2.4 Grouped bar chart of seasonal data
+```{r}
+ggplot(season_holiday_comparison,
+       aes(x = factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+           y = avg_rentals,
+           fill = holiday)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Average bike rentals by season and type of holiday",
+    x = "Season",
+    y = "Average number of bikes rented",
+    fill = "Holiday type"
+  ) +
+  theme_minimal() 
+```
+
+
+
+
+
+
+
+
+
+
+
 #Task 3
 # 3.1. Load the full Seoul Bike CSV.
 bikes <- read.csv(file.choose(), check.names = FALSE, fileEncoding = "latin1")

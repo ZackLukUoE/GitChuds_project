@@ -292,6 +292,7 @@ ggplot(seoul_bikes,
 
 
 ##Task 5
+# Used genAI to help create variable for weekdays/weekends
 
 ```{r}
 
@@ -308,8 +309,6 @@ seoul_bikes <- seoul_bikes %>%
 
 ```
 
-# Used genAI to help create variable for weekdays/weekends
-
 ```{r}
 
 hour_profile <- seoul_bikes %>%
@@ -322,8 +321,8 @@ mean_rented_bikes = mean(`rented_bike_count`,na.rm = TRUE),
 ggplot(hour_profile, aes(x = hour, y = mean_rented_bikes, colour = day_type)) +
 geom_line() +
 labs(x = "Hour", y = "Mean rented bikes", colour = "Day type"
-)
-
+) +
+theme_minimal()
 
 
 ```

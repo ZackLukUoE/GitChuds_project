@@ -294,15 +294,16 @@ ggplot(seoul_bikes,
 ##Task 5
 
 ```{r}
+
 seoul_bikes <- seoul_bikes %>%
-mutate(
-Date = as.Date(Date, format = "%d/%m/%Y"),
-day_type = if_else(
-Holiday == "Holiday" | wday(Date, week_start = 1)
->= 6,
-"Weekend/Holiday",
-"Weekday")
-)
+  mutate(
+    day_type = if_else(
+      lubridate::wday(as.Date(date, format = "%d/%m/%Y"),
+                      week_start = 1) >= 6,
+      "Weekend/Holiday",
+      "Weekday"
+    )
+  )
 
 
 ```
@@ -312,13 +313,13 @@ Holiday == "Holiday" | wday(Date, week_start = 1)
 ```{r}
 
 hour_profile <- seoul_bikes %>%
-group_by(day_type,Hour) %>%
+group_by(day_type, hour) %>%
 summarise( 
-mean_rented_bikes = mean(`Rented Bike Count`,na.rm = TRUE),
+mean_rented_bikes = mean(`rented_bike_count`,na.rm = TRUE),
 .groups = "drop"
 )
 
-ggplot(hour_profile, aes(x = Hour, y = mean_rented_bikes, colour = day_type)) +
+ggplot(hour_profile, aes(x = hour, y = mean_rented_bikes, colour = day_type)) +
 geom_line() +
 labs(x = "Hour", y = "Mean rented bikes", colour = "Day type"
 )

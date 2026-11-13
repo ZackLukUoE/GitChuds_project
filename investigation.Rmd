@@ -301,17 +301,20 @@ day_type = if_else(
 Holiday == "Holiday" | wday(Date, week_start = 1)
 >= 6,
 "Weekend/Holiday",
-"Weekday"
+"Weekday")
 )
-)
+
 
 ```
 
+# Used genAI to help create variable for weekdays/weekends
+
 ```{r}
-hour_profile <- bikes %>%
+
+hour_profile <- seoul_bikes %>%
 group_by(day_type,Hour) %>%
 summarise( 
-mean_rented_bikes = mean('Rented Bike Count',na.rm = TRUE),
+mean_rented_bikes = mean(`Rented Bike Count`,na.rm = TRUE),
 .groups = "drop"
 )
 

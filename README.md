@@ -39,7 +39,7 @@ This is a template repository for your group project. One of your group members 
   - [] Infer
   
 - Big Question
-How resilient is the demand for rented bikes to adverse weather conditions across different functional time windows (e.g. peak commuting hours vs. weekend leisure hours)?
+Predicting the deamnd for rented bikes in Seoul considering time and weather variables.
 
 # Check-in
 

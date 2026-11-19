@@ -38,7 +38,7 @@ library(scales)
 |**Snowfall**| snowfall_cm | dbl | numerical | snowfall in cm |
 |**Seasons**| seasons | chr | categorical | represents the four seasons |
 |**Holiday**| holiday | chr | categorical | holiday or no holiday |
-|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not (will be cleaned away)|
+|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not|
 
 ## Questions
 1. Does temperature affect bike demand differently during peak commuting hours (8-9am and 6-7pm) compared to off-peak hours? \

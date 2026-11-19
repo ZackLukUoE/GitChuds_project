@@ -63,8 +63,10 @@ seoul_bikes <- seoul_bikes_raw |>
 
 seoul_bikes <- seoul_bikes |> 
   filter(functioning_day != "No") |>  
-  subset(select = -functioning_day)
+  select(-functioning_day)
 #after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.
+
+seoul_bikes
 ```
 
 ## Task 1 - Investigating the Effect of Temperature of Number of Rented Bikes During Peak or Non-Peak Hours
@@ -419,6 +421,73 @@ seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
 
 ```
 Looking at the graph, we can see that bikes are rented most when temperature is between 20 and 25 degrees and humidity is relatively low. The sales drop off to often below 500 bikes rented per hour on average whenever temperature is below zero regardless of humidity, and there is a similar drop off when humidity nears 100% although to a less extreme extent. This implies that temperature is a greater concern when people are deciding whether or not to rent bikes, which makes intuitive sense as it is a more immediately noticeable factor.
+
+## Splitting Data for Model Training
+```{r, eval = FALSE}
+set.seed(123)
+bike_split <- initial_split(seoul_bikes, prop = 0.8)
+bike_train <- training(bike_split)
+bike_test <- testing(bike_split)
+```
+
+## Checking Correlations
+```{r}
+seoul_bikes <- seoul_bikes |> 
+  mutate(peak = ifelse(hour %in% c(7:9, 17:19), 1, 0))
+
+seoul_bikes |> 
+  select(where(is.numeric)) |> 
+  cor() |> 
+  round(2)
+
+seoul_bikes |>
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0)
+  ) |> 
+  group_by(precipitation) |> 
+  count()
+
+seoul_bikes |> 
+  ggplot(aes(hour, rented_bike_count)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+  #although can consider peak and non-peak hours, the afternoon hours overall suggest that demand still remains high, so it would be wrong to group the afternoon hours with other times. As such, it might be worth dropping the peak variable.
+```
+### Variables to Drop
+
+1. dew_point_temperature_c has high correlation to temperature_c and humidity_percent, this functions essentially as a compounded variable for rented_bike_count, so we can drop this.
+
+2. visibility, whilst it has a moderately strong negative correlation with humidity_percent, as it ultimately still has a weak correlation with rented_bike_count, we can drop this too.
+
+3. wind_speed_m_s is by far the least corrolative variable with rented_bike_count, we can drop this as well.
+
+4. peak seems to be outperformed by the hour variable, which is unsurprising, as it servers more as a generalisation. As such it might be worth dropping it, as the reason for such a low correlation is because afternoon demand still remains high, although it is always lower than the peak hours. Thus, we will drop this variable as well.
+
+5. solar radiation, although it has some correlation to the number of rented bikes, it does not have a significant correlation with other variables except temperature, wind speed and humidity. As we will keep temperature and hunidity, and are dropping wind speed, this will also be dropped for simplicity.
+
+To simplify the model, we might want to group variables together into new ones, such as for rainfall_mm and snowfall_cm, we may be able to mutate these into a new variable called precipitation. Perhaps we can model this as just a binary variable, as in many days within the data there was neither.
+
+```{r}
+#We merge rainfall and snowfall variables together, and consider weekdays & weekends, and also join hour and holiday together as their behaviours are different based on whether it is a holiday or not.
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+    hour_holiday = interaction(hour, holiday, sep = "_")
+  ) |> 
+  select(
+    rented_bike_count,
+    hour_holiday,
+    is_weekend,
+    temperature_c,
+    humidity_percent,
+    seasons,
+    precipitation
+  )
+
+seoul_bikes
+```
+
 
 ## Initial Plots
 ```{r}

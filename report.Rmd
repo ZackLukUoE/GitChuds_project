@@ -33,10 +33,7 @@ seoul_bikes <- seoul_bikes_raw |>
 seoul_bikes |>
   filter(functioning_day == "No" & rented_bike_count > 0)
 
-seoul_bikes <- seoul_bikes |> 
-  filter(functioning_day != "No") |>  
-  subset(select = -functioning_day)
-#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.
+
 ```
 
 

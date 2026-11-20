@@ -12,10 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-lib, include = FALSE}
 library(tidyverse)
+library(tidymodels)
 library(readr)
 library(janitor)
 library(ggplot2)
 library(scales)
+library(rsample)
 ```
 
 
@@ -76,23 +78,178 @@ Below is a variable table of the clean data:
 | seasons | categorical | determines if the day is in winter, spring, summer or autumn |
 | precipitation | numerical | has values 1 or 0 used to determine if there was any precipitation during the hour of day |
 
-## Findings
+## Initial Findings
 
-The write-up of your project and findings go here. 
+### Temperature vs. Number of Rented Bikes in Specific Time Windows
 
-Think of this as the text of your presentation with some extra detail to cover what there was not time to discuss in the presentation. This might include any assumptions you made when doing your analysis, any limitations of the work you have done or any ideas you have for future work. Feel free to split this section into subsections to make it easier to read. 
+```{r, echo = FALSE}
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    peak = ifelse(hour %in% c(7:9, 17:19), TRUE, FALSE)
+    #used Gemini to help with shortening the conditional statement, as initially was hour == 7 | hour == 8 | ... 
+  )
 
-The length should be roughly 1,500 words. 
-If you want to use a word count addin, you can install this by copying and pasting the following into RStudio:
+seoul_bikes |> 
+  ggplot(aes(x = temperature_c, y = rented_bike_count)) +
+  geom_jitter(
+    aes(colour = peak),
+    alpha = 0.15
+  ) +
+  geom_smooth(
+    method = "gam",
+    se = FALSE,
+    linewidth = 1.2,
+    colour = "#d95f02"
+    ) +
+  facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
+    holiday ~ peak,
+    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
+    ) +
+  #changes labels from facetting to "Peak" and "Non-Peak"
+  theme_minimal() +
+  scale_colour_manual(
+    guide = "legend",
+    values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
+    labels = c("TRUE" = "Peak", "FALSE" = "Non-Peak")
+    ) +
+  guides(alpha = "none") +
+  labs(
+    x = "Temperature (c)",
+    y = "Number of Rented Bikes Per Hour",
+    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
+    title = "Bike Demand Sensitivity to Temperature"
+  )
 
-`devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)`
+determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
+  density_df <- df |>
+    filter({{ max_var }} == max_var_condition) |>
+    pull({{ density_var }}) |> 
+    density() |> 
+    (\(d) tibble::tibble(x = d$x, y = d$y))()
+    #creating a separate data frame for density values
+  
+    high_peak <- density_df |> filter(y == max(y))
+    low_peak <- density_df |> filter(x < 15) |> filter(y == max(y))
+    
+    tibble::tibble(
+      max_y_high = high_peak$y,
+      x_at_max_y_high = high_peak$x,
+      max_y_low = low_peak$y,
+      x_at_max_y_low = low_peak$x
+    )
+    #returns values in tibble form
+}
+#needed to use {{}} as passing in the column names and not variable objects - Gemini was used, as it was initially causing errors
+```
 
-You will then need to restart RStudio. Once you have done that, select the text you want to count the words of, go to Addins, and select the `Word count` addin.
-This addin counts words using two different algorithms, but the results should be similar and as long as you're in the ballpark of 1,500 words, you're good! 
-The addin will ignore code chunks and only count the words in prose. If you don't want to use the addin you can always copy and paste the text into Microsoft Word to do a Word Count!
+```{r, echo = FALSE}    
+peak_maxes<- determine_density_maxes(seoul_bikes, peak, TRUE, temperature_c)
+non_peak_maxes <- determine_density_maxes(seoul_bikes, peak, FALSE, temperature_c)
+#followed the following guide: https://ianmadd.github.io/pages/PeakDensityDistribution.html
 
-You can also load your data here and present any analysis results / plots.
-Make sure to hide your code with  `echo = FALSE` unless the point you are trying to make is about the code itself, in which case you should show your code.
+seoul_bikes |> 
+  ggplot(aes(x = temperature_c, alpha = 0.1, colour = ifelse(peak == TRUE, "#384860", "#97a6c4"))) +
+  geom_density(linewidth = 1) +
+  geom_vline(xintercept = peak_maxes$x_at_max_y_high, linetype = "dashed", colour = "#384860") +
+  geom_vline(xintercept = peak_maxes$x_at_max_y_low, linetype = "dashed", colour = "#384860") +
+  geom_vline(xintercept = non_peak_maxes$x_at_max_y_high, linetype = "dotted", colour = "#97a6c4") +
+  geom_vline(xintercept = non_peak_maxes$x_at_max_y_low, linetype = "dotted", colour = "#97a6c4") +
+  theme_minimal() +
+  scale_colour_identity(
+    guide = "legend",
+    labels = c("Peak", "Non-Peak")
+    ) +
+  guides(alpha = "none") +
+  labs(
+    x = "Temperature (c)",
+    y = "Density",
+    colour = "Peak Commuting Hour (7-9am or 6-7pm)",
+    title = stringr::str_wrap("Temperature Distribution Comparison : Peak and Non-Peak Commuting Hours")
+    #needed str_wrap to ensure the entire title shows on the plot
+  )
+```
+
+### Seasons vs. Rented Bike Count considering Holidays
+
+### Precipitation vs. Rented Bike Count
+
+### Behaviour of Temperature vs. Humidity whilst considering Rented Bike Count
+
+### Behaviour of Rented Bike Count on Weekdays Compared to Weekends & Holidays
+
+## Modelling
+
+### Simplified Dataset
+
+Below is the first 10 rows of the clean data set we will be using for modelling:
+
+```{r, echo = FALSE}
+seoul_bikes_clean <- seoul_bikes |> 
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+    hour_holiday = interaction(hour, holiday, sep = "_")
+  ) |> 
+  select(
+    rented_bike_count,
+    hour_holiday,
+    is_weekend,
+    temperature_c,
+    humidity_percent,
+    seasons,
+    precipitation
+  )
+
+seoul_bikes_clean |> 
+  head(10)
+```
+### Splitting Dataset and Building Workflow
+
+```{r, echo = FALSE}
+set.seed(67)
+
+seoul_bikes_clean_split <- initial_split(seoul_bikes_clean, prop = 0.80)
+
+train_data <- training(seoul_bikes_clean_split)
+test_data <- testing(seoul_bikes_clean_split)
+
+seoul_bikes_rec <- recipe(
+  rented_bike_count ~ .,
+  data = train_data
+) |> 
+  step_dummy(all_nominal(), -all_outcomes()) |> 
+  step_zv(all_predictors())
+
+seoul_bikes_mod <- linear_reg() |> 
+  set_engine("lm")
+
+seoul_bikes_wflow <- workflow() |> 
+  add_model(seoul_bikes_mod) |> 
+  add_recipe(seoul_bikes_rec)
+
+seoul_bikes_fit <- seoul_bikes_wflow |> 
+  fit(data = train_data)
+
+seoul_bikes_fit |> 
+  tidy()
+```
+Notice our Linear model has 55 terms including the baseline. This is caused by the factoring by combining the original variables hour and holiday together.
+
+Below is the expression of our linear model:
+
+$$
+\begin{aligned}
+\widehat{\text{rented bike count}} &= 903.26 - 68.74 \times \text{is weekend} + 20.38 \times \text{temperature c} - 6.70 \times \text{humidity percent} \\
+&\quad - 247.01 \times \text{precipitation} - 80.61 \times \text{hour holiday X1 Holiday} - 99.72 \times \text{hour holiday X2 Holiday} + \dots \\
+&\quad - 29.98 \times \text{hour holiday X0 No.Holiday} - 132.89 \times \text{hour holiday X1 No.Holiday} + \dots \\
+&\quad - 66.15 \times \text{seasons Spring} + 11.12 \times \text{seasons Summer} - 283.33 \times \text{seasons Winter}
+\end{aligned}
+$$
+Notice that 'seasons_Autumn' does not have its own term. This is because the variable has been in a sense absorbed into the baseline.
+
+Variables are also not in snake_case as latex in RMarkdown provides an output that is not clean.
+
+## Limitations
 
 
 

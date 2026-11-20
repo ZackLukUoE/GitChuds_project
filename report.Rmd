@@ -97,7 +97,6 @@ Make sure to hide your code with  `echo = FALSE` unless the point you are trying
 
 
 ## References
-
-List any references here. You should, at a minimum, list your data source.
+Easwaramoorthy, Sathishkumar Veerappampalayam . 2020. Seoul Bike Sharing Demand. UCI Machine Learning Repository. https://doi.org/10.24432/C5F62R.
 
 

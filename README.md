@@ -34,8 +34,8 @@ This is a template repository for your group project. One of your group members 
   - [] Infer
   
   - Task 5 (Freddie) - Compare the 24 hour rented bike profile during the week vs. weekends or holidays
-  - [] Use the working day variable to separate weekdays and weekends/ holidays
-  - [] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
+  - [X] Use the working day variable to separate weekdays and weekends/ holidays
+  - [X] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
   - [] Infer
   
 - Big Question

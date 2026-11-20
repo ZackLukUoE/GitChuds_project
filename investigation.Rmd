@@ -348,62 +348,135 @@ Next steps - write out cleaner observations
 Explore: 
 Can temperature explain the seasonal differences in this demand?
 How does it link to the big question.
-#Task 3
+##Task 3
+
+Identify if precipitation drops demand linearly or shows a sharp threshold
+
+ We look at rental counts at various levels of precipitation to see if demand decreases gradually as precipitation increases or drops off sharply above a certain point.
+```{r}
+library(tidyverse)
+library(janitor)
+
 # 3.1. Load the full Seoul Bike CSV.
-bikes <- read.csv(file.choose(), check.names = FALSE, fileEncoding = "latin1")
+bikes <- read_csv(
+  "data/SeoulBikeData.csv",
+  locale = locale(encoding = "latin1")
+) %>%
+  clean_names()
 
 # 3.2 Keep only hours when the bike rental service was operating.
-bikes <- subset(bikes, `Functioning Day` == "Yes")
+bikes <- bikes %>%
+  filter(functioning_day == "Yes")
+```
 
+```{r}
 # 3.3 Each row represents one hour. | means OR, and & means AND.
-wet_hours <- subset(bikes, `Rainfall(mm)` > 0 | `Snowfall (cm)` > 0)
-both_hours <- subset(bikes, `Rainfall(mm)` > 0 & `Snowfall (cm)` > 0)
+wet_hours <- bikes %>%
+  filter(rainfall_mm > 0 | snowfall_cm > 0)
 
-nrow(wet_hours)
-nrow(both_hours)
+both_hours <- bikes %>%
+  filter(rainfall_mm > 0 & snowfall_cm > 0)
 
+wet_hours %>%
+  summarise(hours = n())
+
+both_hours %>%
+  summarise(hours = n())
+```
+931 hours had snow,rain or both
+28hours had both rain and snow
+```{r}
 # 3.4 Compare rain and snow separately, keeping dry hours in both plots.
-rain_data <- subset(bikes, `Snowfall (cm)` == 0)
-snow_data <- subset(bikes, `Rainfall(mm)` == 0)
+rain_data <- bikes %>%
+  filter(snowfall_cm == 0)
 
-# 3.5 cut() groups the measurements into bands.
+snow_data <- bikes %>%
+  filter(rainfall_mm == 0)
+```
+```{r}
+# Define precipitation bands
+rain_data <- rain_data %>%
+  mutate(
+    rain_level = case_when(
+      rainfall_mm == 0 ~ "0",
+      rainfall_mm > 0 & rainfall_mm <= 1 ~ "(0, 1]",
+      rainfall_mm > 1 & rainfall_mm <= 5 ~ "(1, 5]",
+      rainfall_mm > 5 & rainfall_mm <= 10 ~ "(5, 10]",
+      rainfall_mm > 10 ~ ">10"
+    ),
+    rain_level = fct_relevel(
+      rain_level,
+      "0", "(0, 1]", "(1, 5]", "(5, 10]", ">10"
+    )
+  )
 
-rain_data$rain_level <- cut(
-  rain_data$`Rainfall(mm)`,
-  breaks = c(-Inf, 0, 1, 5, 10, Inf),
-  labels = c("0", "(0, 1]", "(1, 5]", "(5, 10]", ">10")
-)
-
-snow_data$snow_level <- cut(
-  snow_data$`Snowfall (cm)`,
-  breaks = c(-Inf, 0, 1, 3, 5, Inf),
-  labels = c("0", "(0, 1]", "(1, 3]", "(3, 5]", ">5")
-)
-
-boxplot(
-  `Rented Bike Count` ~ rain_level,
+snow_data <- snow_data %>%
+  mutate(
+    snow_level = case_when(
+      snowfall_cm == 0 ~ "0",
+      snowfall_cm > 0 & snowfall_cm <= 1 ~ "(0, 1]",
+      snowfall_cm > 1 & snowfall_cm <= 3 ~ "(1, 3]",
+      snowfall_cm > 3 & snowfall_cm <= 5 ~ "(3, 5]",
+      snowfall_cm > 5 ~ ">5"
+    ),
+    snow_level = fct_relevel(
+      snow_level,
+      "0", "(0, 1]", "(1, 3]", "(3, 5]", ">5"
+    )
+  )
+# Rainfall box plot: exclude snow to isolate rainfall
+ggplot(
   data = rain_data,
-  main = "Bike rentals by rainfall level",
-  xlab = "Rainfall (mm)",
-  ylab = "Hourly bike rentals",
-  col = "lightblue"
-)
+  mapping = aes(x = rain_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Bike rentals by rainfall level",
+    x = "Rainfall (mm)",
+    y = "Hourly bike rentals"
+  )
 
-boxplot(
-  `Rented Bike Count` ~ snow_level,
+
+# Snowfall box plot: exclude rain to isolate snowfall
+ggplot(
   data = snow_data,
-  main = "Bike rentals by snowfall level",
-  xlab = "Snowfall (cm)",
-  ylab = "Hourly bike rentals",
-  col = "lightgrey"
-)
+  mapping = aes(x = snow_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightgrey") +
+  labs(
+    title = "Bike rentals by snowfall level",
+    x = "Snowfall (cm)",
+    y = "Hourly bike rentals"
+  )
 
+```
+Both box plots show significantly lower median bike rentals during hours with precipitation. The largest drop is between zero precipitation and the lowest positive precipitation band, suggesting a possible threshold for the initiation of rain or snow. Demand for rainfall falls further at higher levels, while snowfall has a less consistent pattern. These results suggest a nonlinear relationship but the group plots cannot identify a specific threshold. Differences may also be due to other factors like temperature, season and time of day.
+```{r}
 # 3.6 Check the number of hours and the median rentals in each band.
-table(rain_data$rain_level)
-tapply(rain_data$`Rented Bike Count`, rain_data$rain_level, median, na.rm = TRUE)
+rain_summary <- rain_data %>%
+  group_by(rain_level) %>%
+  summarise(
+    hours = n(),
+    median_rentals = median(rented_bike_count, na.rm = TRUE)
+  )
 
-table(snow_data$snow_level)
-tapply(snow_data$`Rented Bike Count`, snow_data$snow_level, median, na.rm = TRUE)
+snow_summary <- snow_data %>%
+  group_by(snow_level) %>%
+  summarise(
+    hours = n(),
+    median_rentals = median(rented_bike_count, na.rm = TRUE)
+  )
+
+rain_summary
+snow_summary
+```
+
+
+Median hourly bike rentals dropped from 643 at dry hours to 127 with rainfall above 0 and up to 1mm, which is a decrease of about 80%. The median then fell to 38 for raifall between 1 and 5mm and 22 between 5 and 10mm. It increased when above 10mm to 51, this band contained only 21 observations. The greatest decrease happened between dry conditions and light rain, meaning a possible threshold near the start of rain.
+
+Snowfall showed a similar initial drop. Median rentals decreased from 643 with no precipitation to 144 with snowfall above 0 and up to 1 cm, a decrease of approximately 78%. The medians across higher snowfall bands were 178, 86 and 114, showing an inconsistent pattern. The highest snowfall band contained only three observations, making its median unclear.
+
+To sum things up these results at first show a big reduction in percipitation rather than a slow and steady decline.We cannot establish a threshold using the data
 ## Task 4 
 ```{r}
 seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,

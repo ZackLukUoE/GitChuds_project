@@ -204,7 +204,7 @@ seoul_bikes |>
   labs(
     x = "Temperature (c)",
     y = "Density",
-    colour = "Peak Commuting Hour (8-9am or 6-7pm)",
+    colour = "Peak Commuting Hour (7-9am or 6-7pm)",
     title = stringr::str_wrap("Temperature Distribution Comparison : Peak and Non-Peak Commuting Hours")
     #needed str_wrap to ensure the entire title shows on the plot
   )
@@ -564,7 +564,7 @@ seoul_bikes
 
 
 ## Initial Plots
-```{r}
+```{r, eval = FALSE}
 seoul_bikes |>  ggplot(data = _, mapping = aes(x = temperature_c, y = rented_bike_count)) +
   geom_point(mapping = aes(color = holiday, alpha = visibility_10m, shape = seasons)) +
   geom_smooth(se = FALSE) + 

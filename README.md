@@ -19,7 +19,7 @@ This is a template repository for your group project. One of your group members 
   - [X] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
   - [X] Infer
   
-  - Task 2 - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
+  - Task 2 (Miles) - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
   - [] Calculate an average hourly demand, grouped by seasons and holiday
   - [] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
   - [] Infer
@@ -33,13 +33,14 @@ This is a template repository for your group project. One of your group members 
   - [X] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [] Infer
   
+
   - Task 5 (Freddie) - Compare the 24 hour rented bike profile during the week vs. weekends or holidays
   - [X] Use the working day variable to separate weekdays and weekends/ holidays
   - [X] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
-  - [] Infer
+  - [X] Infer
   
 - Big Question
-How resilient is the demand for rented bikes to adverse weather conditions across different functional time windows (e.g. peak commuting hours vs. weekend leisure hours)?
+Predicting the deamnd for rented bikes in Seoul considering time and weather variables.
 
 # Check-in
 

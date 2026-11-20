@@ -21,7 +21,11 @@ library(readr)
 library(janitor)
 library(ggplot2)
 library(scales)
+
 library(lubridate)
+
+library(rsample)
+
 ```
 
 |Raw Variable Name| Clean Variable Name | Data Type| Numerical or Categorical | Description & Units |
@@ -39,7 +43,7 @@ library(lubridate)
 |**Snowfall**| snowfall_cm | dbl | numerical | snowfall in cm |
 |**Seasons**| seasons | chr | categorical | represents the four seasons |
 |**Holiday**| holiday | chr | categorical | holiday or no holiday |
-|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not (will be cleaned away)|
+|**Functioning Day**| functioning_day | chr | categorical | yes or no; represents if system is fully operational or not|
 
 ## Questions
 1. Does temperature affect bike demand differently during peak commuting hours (8-9am and 6-7pm) compared to off-peak hours? \
@@ -61,14 +65,13 @@ seoul_bikes <- seoul_bikes_raw |>
 
 #looking above at the variable table, it might mean that on non-functional days, there will be no bikes rented whatsoever. We run the following code to verify:
 #seoul_bikes |> filter(functioning_day == "No" & rented_bike_count > 0)
-#from this, we realise that there are no 
 
 seoul_bikes <- seoul_bikes |> 
   filter(functioning_day != "No") |>  
-  subset(select = -functioning_day)
-#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant. Code in comments below demonstrates this if there was no clean
-#seoul_bikes |> ggplot(mapping = aes(x = functioning_day, y = rented_bike_count)) +
-  #geom_col()
+  select(-functioning_day)
+#after dropping non-functioning days, we can drop the functioning_day variable entirely, as it has become redundant.
+
+seoul_bikes
 ```
 
 ## Task 1 - Investigating the Effect of Temperature of Number of Rented Bikes During Peak or Non-Peak Hours
@@ -101,9 +104,9 @@ seoul_bikes |>
     linewidth = 1.2,
     colour = "#d95f02"
     ) +
-  facet_wrap(
-    ~ peak,
-    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak"))
+  facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
+    holiday ~ peak,
+    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +
@@ -217,7 +220,354 @@ We can see that both plots resemble the same shape, essentially an "M", where th
 
 This may indicate how the relative proportions of how bike-renters reacting to changes in temperatures are almost identical across peak and off-peak commuting hours.
 
+<<<<<<< HEAD
 From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are percieved to be lower.
+=======
+From the peaks of the density plots, we may also infer that bike-renters (unsurprisingly) are not immune to changes in temperatures (and thereby weather). For example when it is hot at close to 30 degrees C, the proportion of bike renters fall at a much quicker rate across both time windows. When it is colder, we see how when temperatures are colder than approximately -5 degrees C, the proportion of bike renters also fall more quickly. Most interesting is the middle of the peaks where the trough lies, as the number of falls at approximately 13 degrees C. This is likely due to the fact that Seoul as a city in general experiences long, cold winters and long, warm summers, hence the number of data entries are perceived are lower. 
+
+#Task 2
+Determining if the drop in demand for rented bikes is consistent across all four seasons(Specifically when it is a holiday).
+
+Is the effect of holidays on bike rental demand is consistent across all four seasons?
+
+Does adverse weather have a consistent impact on bike rental demand during holidays across all four seasons?
+
+I'll need to group data
+- season
+- holiday
+- hour 
+compare vs non-holiday in each season
+visualise results
+work out percentages/mean differences in data that allows a conclusion
+# 2.1 Grouping data by rented bike count holiday vs no holiday
+```{r}
+holiday_comparison <- seoul_bikes %>%
+  group_by(holiday) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+   )
+```
+
+#2.2 Bar chart of rented bike count holiday vs no holiday
+```{r}
+ggplot(holiday_comparison,
+       aes(x = holiday, y = avg_rentals, fill = holiday)) +
+  geom_col() +
+  labs(
+    title = "Average bike rentals during a holiday vs non-holiday",
+    x = "Holiday vs Non-Holiday",
+    y = "Average number of bikes rented"
+  ) +
+  theme_minimal()
+```
+
+Observations: Very simple bar chart and code shows that on average there is more bike rentals during non-holiday days vs holiday days. Is this suprising? For me it was slightly suprising (presuming this is seouls holiday) you might have thought people get out and about explore the city more, if tourists come over you definetly might presume they rent out bikes. On the contrary many workers may leave the city for the holiday and therefore bike rental decreases. The no holiday rental was 739 compared to holiday rental average of 529. 39.7% difference ((739-529)/529)x100. Regular commuting patterns may also explain this. We can't determine the cause though with this one data viz.
+
+#2.3 Grouping data with seasons now included
+```{r}
+season_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+#2.4 Grouped bar chart of seasonal data
+```{r}
+ggplot(season_holiday_comparison,
+       # Used factor() to display seasons in chronological order on x-axis instead of alphabetical
+       aes(x = factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+           y = avg_rentals,
+           fill = holiday)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Average bike rentals by season and type of holiday",
+    x = "Season",
+    y = "Average number of bikes rented",
+    fill = "Holiday type"
+  ) +
+  theme_minimal() 
+```
+
+
+Observations:
+This grouped bar chart shows how the average bike rentals varies between holidays and non-holidays across the four seasons. Summer has the highest average rentals, with roughly the same number in each category, whereas winter has the lowest. Autumn shows slighlty higher average rentals on holidays while summer shows minimal diffecences. Ocerall, the findings suggest that seasonal variation has stronger association with bike rental  demand rather than holiday status (variation between holiday vs non holiday is small in each season whereas the average bike rentals is bigger)
+Seasons   Holiday        avg_rentals
+1 Autumn  Holiday           948.
+2 Autumn  No Holiday        923.
+3 Spring  Holiday           635.
+4 Spring  No Holiday        750.
+5 Summer  Holiday          1022.
+6 Summer  No Holiday       1034.
+7 Winter  Holiday           157.
+8 Winter  No Holiday        232.
+
+Earlier analysis showed that non-holidays had 39.7% higher average rentals overall, the seasonal breakdown proves this relationship is not consitent throughout the year.
+Winter 47.8% higher
+Spring 18.1% higher
+Summer 1.2% higher
+Autmun -2.6% lower
+
+Can temperature explain the seasonal differences in this demand?
+
+#2.5 Grouping data by season, holiday and hour
+```{r}
+hourly_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday, hour) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+   )
+```
+From 2.1 all of the rest is very repeatable data - which is something important in R.
+#2.6 Data visualisation
+```{r}
+ggplot(hourly_holiday_comparison,
+       aes(x = hour, y = avg_rentals,
+           colour = holiday)) +
+  # Used geom_line() instead of geom_col() because I'm now investigating how rentals change throughout the day.
+  geom_line(linewidth = 1) +
+  # Used facet_wrap() for easier comparison
+  facet_wrap(
+    ~factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+    #added axes = "all_x" by asking GenAi because I wanted all graphs to have x-axis only the bottom 2 originally had it.
+    axes = "all_x"
+  )+
+  scale_x_continuous(breaks = seq(0, 23, 3)) +
+
+  labs(
+    title = "Hourly average bike rentals by season and type of holiday",
+    x = "Hour of day",
+    y = "Average number of bikes rented",
+    colour = "Holiday type"
+  ) +
+  theme_minimal() 
+```
+Bimodals in the non-holiday lines.
+Holiday lines no clear comparisons.
+Morning peak around 8am on non-holidays
+Evening peak around 6pm
+Holiday rentals generally more evenly distributed
+
+Next steps - write out cleaner observations
+Explore: 
+Can temperature explain the seasonal differences in this demand?
+How does it link to the big question.
+##Task 3
+
+Identify if precipitation drops demand linearly or shows a sharp threshold
+
+ We look at rental counts at various levels of precipitation to see if demand decreases gradually as precipitation increases or drops off sharply above a certain point.
+```{r}
+library(tidyverse)
+library(janitor)
+
+# 3.1. Load the full Seoul Bike CSV.
+bikes <- read_csv(
+  "data/SeoulBikeData.csv",
+  locale = locale(encoding = "latin1")
+) %>%
+  clean_names()
+
+# 3.2 Keep only hours when the bike rental service was operating.
+bikes <- bikes %>%
+  filter(functioning_day == "Yes")
+```
+
+```{r}
+# 3.3 Each row represents one hour. | means OR, and & means AND.
+wet_hours <- bikes %>%
+  filter(rainfall_mm > 0 | snowfall_cm > 0)
+
+both_hours <- bikes %>%
+  filter(rainfall_mm > 0 & snowfall_cm > 0)
+
+wet_hours %>%
+  summarise(hours = n())
+
+both_hours %>%
+  summarise(hours = n())
+```
+931 hours had snow,rain or both
+28hours had both rain and snow
+```{r}
+# 3.4 Compare rain and snow separately, keeping dry hours in both plots.
+rain_data <- bikes %>%
+  filter(snowfall_cm == 0)
+
+snow_data <- bikes %>%
+  filter(rainfall_mm == 0)
+```
+```{r}
+# Define precipitation bands
+rain_data <- rain_data %>%
+  mutate(
+    rain_level = case_when(
+      rainfall_mm == 0 ~ "0",
+      rainfall_mm > 0 & rainfall_mm <= 1 ~ "(0, 1]",
+      rainfall_mm > 1 & rainfall_mm <= 5 ~ "(1, 5]",
+      rainfall_mm > 5 & rainfall_mm <= 10 ~ "(5, 10]",
+      rainfall_mm > 10 ~ ">10"
+    ),
+    rain_level = fct_relevel(
+      rain_level,
+      "0", "(0, 1]", "(1, 5]", "(5, 10]", ">10"
+    )
+  )
+
+snow_data <- snow_data %>%
+  mutate(
+    snow_level = case_when(
+      snowfall_cm == 0 ~ "0",
+      snowfall_cm > 0 & snowfall_cm <= 1 ~ "(0, 1]",
+      snowfall_cm > 1 & snowfall_cm <= 3 ~ "(1, 3]",
+      snowfall_cm > 3 & snowfall_cm <= 5 ~ "(3, 5]",
+      snowfall_cm > 5 ~ ">5"
+    ),
+    snow_level = fct_relevel(
+      snow_level,
+      "0", "(0, 1]", "(1, 3]", "(3, 5]", ">5"
+    )
+  )
+# Rainfall box plot: exclude snow to isolate rainfall
+ggplot(
+  data = rain_data,
+  mapping = aes(x = rain_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Bike rentals by rainfall level",
+    x = "Rainfall (mm)",
+    y = "Hourly bike rentals"
+  )
+
+
+# Snowfall box plot: exclude rain to isolate snowfall
+ggplot(
+  data = snow_data,
+  mapping = aes(x = snow_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightgrey") +
+  labs(
+    title = "Bike rentals by snowfall level",
+    x = "Snowfall (cm)",
+    y = "Hourly bike rentals"
+  )
+
+```
+Both box plots show significantly lower median bike rentals during hours with precipitation. The largest drop is between zero precipitation and the lowest positive precipitation band, suggesting a possible threshold for the initiation of rain or snow. Demand for rainfall falls further at higher levels, while snowfall has a less consistent pattern. These results suggest a nonlinear relationship but the group plots cannot identify a specific threshold. Differences may also be due to other factors like temperature, season and time of day.
+```{r}
+# 3.6 Check the number of hours and the median rentals in each band.
+rain_summary <- rain_data %>%
+  group_by(rain_level) %>%
+  summarise(
+    hours = n(),
+    median_rentals = median(rented_bike_count, na.rm = TRUE)
+  )
+
+snow_summary <- snow_data %>%
+  group_by(snow_level) %>%
+  summarise(
+    hours = n(),
+    median_rentals = median(rented_bike_count, na.rm = TRUE)
+  )
+
+rain_summary
+snow_summary
+```
+
+
+Median hourly bike rentals dropped from 643 at dry hours to 127 with rainfall above 0 and up to 1mm, which is a decrease of about 80%. The median then fell to 38 for raifall between 1 and 5mm and 22 between 5 and 10mm. It increased when above 10mm to 51, this band contained only 21 observations. The greatest decrease happened between dry conditions and light rain, meaning a possible threshold near the start of rain.
+
+Snowfall showed a similar initial drop. Median rentals decreased from 643 with no precipitation to 144 with snowfall above 0 and up to 1 cm, a decrease of approximately 78%. The medians across higher snowfall bands were 178, 86 and 114, showing an inconsistent pattern. The highest snowfall band contained only three observations, making its median unclear.
+
+To sum things up these results at first show a big reduction in percipitation rather than a slow and steady decline.We cannot establish a threshold using the data
+## Task 4 
+```{r}
+seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
+                          z = rented_bike_count
+                      )) + stat_summary_2d(
+                        fun = mean, aes(fill
+                                        = after_stat(value))
+                      ) + scale_fill_viridis_c() + 
+                          labs(x = "Temperature (Degrees Celsius)",
+                               y = "Humidity (%)",
+                               fill = "Rented Bike Count",
+                               title = "Bikes Rented according to Temperature and Humidity")
+
+>>>>>>> 0f086099a63215b68c052d1248d0a5b1df730c63
+```
+Looking at the graph, we can see that bikes are rented most when temperature is between 20 and 25 degrees and humidity is relatively low. The sales drop off to often below 500 bikes rented per hour on average whenever temperature is below zero regardless of humidity, and there is a similar drop off when humidity nears 100% although to a less extreme extent. This implies that temperature is a greater concern when people are deciding whether or not to rent bikes, which makes intuitive sense as it is a more immediately noticeable factor.
+
+## Splitting Data for Model Training
+```{r}
+#set.seed(123)
+#bike_split <- initial_split(seoul_bikes, prop = 0.8)
+#bike_train <- training(bike_split)
+#bike_test <- testing(bike_split)
+```
+
+## Checking Correlations
+```{r}
+seoul_bikes <- seoul_bikes |> 
+  mutate(peak = ifelse(hour %in% c(7:9, 17:19), 1, 0))
+
+seoul_bikes |> 
+  select(where(is.numeric)) |> 
+  cor() |> 
+  round(2)
+
+seoul_bikes |>
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0)
+  ) |> 
+  group_by(precipitation) |> 
+  count()
+
+seoul_bikes |> 
+  ggplot(aes(hour, rented_bike_count)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+  #although can consider peak and non-peak hours, the afternoon hours overall suggest that demand still remains high, so it would be wrong to group the afternoon hours with other times. As such, it might be worth dropping the peak variable.
+```
+### Variables to Drop
+
+1. dew_point_temperature_c has high correlation to temperature_c and humidity_percent, this functions essentially as a compounded variable for rented_bike_count, so we can drop this.
+
+2. visibility, whilst it has a moderately strong negative correlation with humidity_percent, as it ultimately still has a weak correlation with rented_bike_count, we can drop this too.
+
+3. wind_speed_m_s is by far the least corrolative variable with rented_bike_count, we can drop this as well.
+
+4. peak seems to be outperformed by the hour variable, which is unsurprising, as it servers more as a generalisation. As such it might be worth dropping it, as the reason for such a low correlation is because afternoon demand still remains high, although it is always lower than the peak hours. Thus, we will drop this variable as well.
+
+5. solar radiation, although it has some correlation to the number of rented bikes, it does not have a significant correlation with other variables except temperature, wind speed and humidity. As we will keep temperature and hunidity, and are dropping wind speed, this will also be dropped for simplicity.
+
+To simplify the model, we might want to group variables together into new ones, such as for rainfall_mm and snowfall_cm, we may be able to mutate these into a new variable called precipitation. Perhaps we can model this as just a binary variable, as in many days within the data there was neither.
+
+```{r}
+#We merge rainfall and snowfall variables together, and consider weekdays & weekends, and also join hour and holiday together as their behaviours are different based on whether it is a holiday or not.
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+    hour_holiday = interaction(hour, holiday, sep = "_")
+  ) |> 
+  select(
+    rented_bike_count,
+    hour_holiday,
+    is_weekend,
+    temperature_c,
+    humidity_percent,
+    seasons,
+    precipitation
+  )
+
+seoul_bikes
 ```
 
 ## Initial Plots

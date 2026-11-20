@@ -11,9 +11,9 @@
 
 <meta name="author" content="by GitChuds: Ethan, Miles, Freddie, Daniel &amp; Zack" />
 
-<meta name="date" content="2026-10-28" />
+<meta name="date" content="2026-11-20" />
 
-<title>Project title</title>
+<title>Predicting the Demand for Rented Bikes in Seoul Considering Time and Weather Variables</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,26 +350,136 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Project title</h1>
+<h1 class="title toc-ignore">Predicting the Demand for Rented Bikes in
+Seoul Considering Time and Weather Variables</h1>
 <h4 class="author">by GitChuds: Ethan, Miles, Freddie, Daniel &amp;
 Zack</h4>
-<h4 class="date">2026-10-28</h4>
+<h4 class="date">2026-11-20</h4>
 
 </div>
 
 
-<div id="research-question" class="section level2">
-<h2>Research Question</h2>
-<p>Describe your research question here. Include why this question might
-be of interest.</p>
+<pre class="r"><code># load data 
+seoul_bikes_raw &lt;- read_csv(&quot;data/SeoulBikeData.csv&quot;, locale=locale(encoding=&quot;latin1&quot;))</code></pre>
+<pre><code>## Rows: 8760 Columns: 14
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (4): Date, Seasons, Holiday, Functioning Day
+## dbl (10): Rented Bike Count, Hour, Temperature(°C), Humidity(%), Wind speed ...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>#extracting raw data, locale needed to be specified as error otherwise.
+
+#clean data
+seoul_bikes &lt;- seoul_bikes_raw |&gt; 
+  clean_names() |&gt; #cleaning names to snake_case, as column headings&#39; words initially separated with space
+  select(-functioning_day)</code></pre>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In this project, we will be analysing the demand for rented bikes in
+Seoul, with the aims of <strong>predicting the demand for rented bikes
+in Seoul considering time and weather variables.</strong> This
+predictive model will be useful for helping to mainting a stable supply
+for bike renters, as well as help rented bike companies to project
+revenues in the future.</p>
 </div>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>Briefly describe your dataset here - include a description of the key
-variables you will be investigating. Include a citation for your data.
-See <a href="http://libraryguides.vu.edu.au/c.php?g=386501&amp;p=4347840" class="uri">http://libraryguides.vu.edu.au/c.php?g=386501&amp;p=4347840</a>
-for guidance on proper citation for datasets. If you got your data off
-the web, make sure to state the retrieval date.</p>
+<div id="raw-dataset" class="section level3">
+<h3>Raw Dataset</h3>
+<p>The Seoul rented bikes data set has 8760 observations across 13
+features. Each observation records details of the date, hourly bike
+demand, hour of day, temperature, rainfall, snowfall and other time and
+weather related-variables.</p>
+</div>
+<div id="cleaning" class="section level3">
+<h3>Cleaning</h3>
+<p>In the raw data set, a variable called functioning_day was used to
+signify if the bike-renting system was operational or not. We realised
+that when functioning_day == “no,” all instances of rented_bike_count
+had a value of 0. As we are interested in the number of rented bikes,
+this would not be relevant for our goal.</p>
+<p>We also used clean_names() to ensure that all variables have in
+snake_case for simplicity when writing code.</p>
+</div>
+<div id="feature-engineering" class="section level3">
+<h3>Feature Engineering</h3>
+<p>We ultimately engineered four variables, but one of which will not be
+used in our linear model, which will be explained in later sections of
+this report.</p>
+<p>hour_holiday — factor that matches an hour of day to whether that day
+is a holiday or not.</p>
+<p>precipitation — has values 1 or 0, used to indicate if there was any
+forms of rainfall or snowfall.</p>
+<p>is_weekend — determines if the day is a weekday or during the
+weekend.</p>
+<p>peak — determines if the hour of day is a peak commuting time. We
+have defined this to be 7-9am and 5-7pm. This is the engineered variable
+that will be removed after exploratory data analysis (EDA).</p>
+</div>
+<div id="key-predictors" class="section level3">
+<h3>Key Predictors</h3>
+<p>For our model the following variables are what we will consider:
+rented_bike_count, hour_holiday, is_weekend, temperature_c,
+humidity_percent, seasons and precipitation.</p>
+<p>Below is a variable table of the clean data:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Variable Name</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">rented_bike_count</td>
+<td align="left">numerical</td>
+<td align="left">number of bikes rented per hour</td>
+</tr>
+<tr class="even">
+<td align="left">hour_holiday</td>
+<td align="left">categorical</td>
+<td align="left">describes the hour of day, and whether the day is a
+holiday or not</td>
+</tr>
+<tr class="odd">
+<td align="left">is_weekend</td>
+<td align="left">categorical</td>
+<td align="left">determines if it is a day in the week or in the
+weekend</td>
+</tr>
+<tr class="even">
+<td align="left">temperature_c</td>
+<td align="left">numerical</td>
+<td align="left">temperature of Seoul in degrees Celsius</td>
+</tr>
+<tr class="odd">
+<td align="left">humidity_percent</td>
+<td align="left">numerical</td>
+<td align="left">humidity of Seoul in percent</td>
+</tr>
+<tr class="even">
+<td align="left">seasons</td>
+<td align="left">categorical</td>
+<td align="left">determines if the day is in winter, spring, summer or
+autumn</td>
+</tr>
+<tr class="odd">
+<td align="left">precipitation</td>
+<td align="left">numerical</td>
+<td align="left">has values 1 or 0 used to determine if there was any
+precipitation during the hour of day</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div id="findings" class="section level2">
 <h2>Findings</h2>

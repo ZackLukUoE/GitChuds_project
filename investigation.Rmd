@@ -21,6 +21,7 @@ library(readr)
 library(janitor)
 library(ggplot2)
 library(scales)
+library(rsample)
 ```
 
 |Raw Variable Name| Clean Variable Name | Data Type| Numerical or Categorical | Description & Units |
@@ -423,11 +424,11 @@ seoul_bikes |> ggplot(aes(x = temperature_c, y = humidity_percent,
 Looking at the graph, we can see that bikes are rented most when temperature is between 20 and 25 degrees and humidity is relatively low. The sales drop off to often below 500 bikes rented per hour on average whenever temperature is below zero regardless of humidity, and there is a similar drop off when humidity nears 100% although to a less extreme extent. This implies that temperature is a greater concern when people are deciding whether or not to rent bikes, which makes intuitive sense as it is a more immediately noticeable factor.
 
 ## Splitting Data for Model Training
-```{r, eval = FALSE}
-set.seed(123)
-bike_split <- initial_split(seoul_bikes, prop = 0.8)
-bike_train <- training(bike_split)
-bike_test <- testing(bike_split)
+```{r}
+#set.seed(123)
+#bike_split <- initial_split(seoul_bikes, prop = 0.8)
+#bike_train <- training(bike_split)
+#bike_test <- testing(bike_split)
 ```
 
 ## Checking Correlations

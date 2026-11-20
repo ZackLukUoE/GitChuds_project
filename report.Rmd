@@ -47,11 +47,6 @@ In the raw data set, a variable called functioning_day was used to signify if th
 
 We also used clean_names() to ensure that all variables have in snake_case for simplicity when writing code.
 
-### Key Variables
-
-The key data points from the dataset that we will be considering are: rented_bike_count, hour, temperature_c, humidity_percent, rainfall_mm, snowfall_cm, seasons, holiday and date. Although we are already considering many variables, this will be further simplified during feature engineering.
-
-
 ### Feature Engineering
 
 We ultimately engineered four variables, but one of which will not be used in our linear model, which will be explained in later sections of this report.
@@ -63,6 +58,23 @@ precipitation — has values 1 or 0, used to indicate if there was any forms of 
 is_weekend — determines if the day is a weekday or during the weekend.
 
 peak — determines if the hour of day is a peak commuting time. We have defined this to be 7-9am and 5-7pm. This is the engineered variable that will be removed after exploratory data analysis (EDA).
+
+### Key Predictors
+
+For our model the following variables are what we will consider: rented_bike_count, hour_holiday, is_weekend, temperature_c, humidity_percent, seasons and precipitation.
+
+Below is a variable table of the clean data:
+
+
+| Variable Name | Type | Description |
+|:--- | :--- |:--- |
+| rented_bike_count | numerical | number of bikes rented per hour |
+| hour_holiday | categorical | describes the hour of day, and whether the day is a holiday or not |
+| is_weekend | categorical | determines if it is a day in the week or in the weekend |
+| temperature_c | numerical | temperature of Seoul in degrees Celsius |
+| humidity_percent | numerical | humidity of Seoul in percent |
+| seasons | categorical | determines if the day is in winter, spring, summer or autumn |
+| precipitation | numerical | has values 1 or 0 used to determine if there was any precipitation during the hour of day |
 
 ## Findings
 

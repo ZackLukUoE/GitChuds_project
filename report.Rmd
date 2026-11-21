@@ -203,7 +203,7 @@ seoul_bikes_clean <- seoul_bikes |>
 seoul_bikes_clean |> 
   head(10)
 ```
-### Splitting Dataset and Building Workflow
+### Linear Model
 
 ```{r, echo = FALSE}
 set.seed(67)
@@ -256,10 +256,16 @@ seoul_bikes_pred <- predict(seoul_bikes_fit, new_data = test_data) |>
 ```
 
 #### Evaluation Metrics
-```{r}
+```{r, echo = FALSE}
 seoul_bikes_pred |> 
   metrics(truth = rented_bike_count, estimate = .pred)
 ```
+
+RMSE (410.19): On average (penalising larger errors more heavily), the model's prediction is off by roughly 410 bikes per hour.
+
+MAE (304.16): Across, all test observations, the typical absolute prediction error is about 304 bikes per hour.
+
+R^2 (0.578): The model's predictors explain approximately 57.8% of the variance in hourly rented bike counts on unseen test data.
 
 #### Residual Graph
 

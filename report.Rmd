@@ -249,6 +249,21 @@ Notice that 'seasons_Autumn' does not have its own term. This is because the var
 
 Variables are also not in snake_case as latex in RMarkdown provides an output that is not clean.
 
+### Results and Residual Graphs of Predictions
+```{r, echo = FALSE}
+seoul_bikes_pred <- predict(seoul_bikes_fit, new_data = test_data) |> 
+  bind_cols(test_data |> select(rented_bike_count))
+```
+
+#### Evaluation Metrics
+```{r}
+seoul_bikes_pred |> 
+  metrics(truth = rented_bike_count, estimate = .pred)
+```
+
+#### Residual Graph
+
+
 ## Limitations
 
 

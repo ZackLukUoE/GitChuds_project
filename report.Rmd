@@ -18,6 +18,7 @@ library(janitor)
 library(ggplot2)
 library(scales)
 library(rsample)
+library(knitr)
 ```
 
 
@@ -51,9 +52,7 @@ We also used clean_names() to ensure that all variables have in snake_case for s
 
 ### Feature Engineering
 
-We ultimately engineered four variables, but one of which will not be used in our linear model, which will be explained in later sections of this report.
-
-hour_holiday — factor that matches an hour of day to whether that day is a holiday or not.
+We ultimately engineered three variables, but one of which will not be used in our linear model, which will be explained in later sections of this report.
 
 precipitation — has values 1 or 0, used to indicate if there was any forms of rainfall or snowfall.
 
@@ -63,7 +62,7 @@ peak — determines if the hour of day is a peak commuting time. We have defined
 
 ### Key Predictors
 
-For our model the following variables are what we will consider: rented_bike_count, hour_holiday, is_weekend, temperature_c, humidity_percent, seasons and precipitation.
+For our model the following variables are what we will consider: rented_bike_count, hour, holiday, is_weekend, temperature_c, humidity_percent, seasons and precipitation.
 
 Below is a variable table of the clean data:
 
@@ -71,7 +70,8 @@ Below is a variable table of the clean data:
 | Variable Name | Type | Description |
 |:--- | :--- |:--- |
 | rented_bike_count | numerical | number of bikes rented per hour |
-| hour_holiday | categorical | describes the hour of day, and whether the day is a holiday or not |
+| hour | categorical | describes the hour of day, categorical data as it will be used as a factor |
+| holiday | categorical | determines if the day is a holiday or not |
 | is_weekend | categorical | determines if it is a day in the week or in the weekend |
 | temperature_c | numerical | temperature of Seoul in degrees Celsius |
 | humidity_percent | numerical | humidity of Seoul in percent |
@@ -188,11 +188,14 @@ seoul_bikes_clean <- seoul_bikes |>
   mutate(
     precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
     is_weekend   = wday(dmy(date)) %in% c(1, 7),
-    hour_holiday = interaction(hour, holiday, sep = "_")
+    #hour_holiday = interaction(hour, holiday, sep = "_")
+    hour = as.factor(hour)
   ) |> 
   select(
     rented_bike_count,
-    hour_holiday,
+    #hour_holiday,
+    hour,
+    holiday,
     is_weekend,
     temperature_c,
     humidity_percent,
@@ -203,7 +206,9 @@ seoul_bikes_clean <- seoul_bikes |>
 seoul_bikes_clean |> 
   head(10)
 ```
-### Linear Model
+### Linear Models
+
+We will be considering two models, one where we interact hour and holiday together, and one where hour and holiday are separately considered in the model. The reason we are considering the interaction between hour and holiday for a model is because from our EDA we determined that the number of rented bikes given a specific hour behaves very differently when it is a holiday and when it is not. Considering their interaction may provide us with more accuracy in terms of predictions.
 
 ```{r, echo = FALSE}
 set.seed(67)
@@ -213,29 +218,55 @@ seoul_bikes_clean_split <- initial_split(seoul_bikes_clean, prop = 0.80)
 train_data <- training(seoul_bikes_clean_split)
 test_data <- testing(seoul_bikes_clean_split)
 
-seoul_bikes_rec <- recipe(
+seoul_bikes_rec_1 <- recipe(
   rented_bike_count ~ .,
   data = train_data
 ) |> 
   step_dummy(all_nominal(), -all_outcomes()) |> 
+  step_interact(terms = ~ starts_with("hour_"):starts_with("holiday_")) |> 
+  step_zv(all_predictors())
+
+seoul_bikes_rec_2 <- recipe(
+  rented_bike_count ~ .,
+  data = train_data
+) |> 
+  step_dummy(all_nominal(), -all_outcomes()) |>
   step_zv(all_predictors())
 
 seoul_bikes_mod <- linear_reg() |> 
   set_engine("lm")
 
-seoul_bikes_wflow <- workflow() |> 
+seoul_bikes_wflow_1 <- workflow() |> 
   add_model(seoul_bikes_mod) |> 
-  add_recipe(seoul_bikes_rec)
+  add_recipe(seoul_bikes_rec_1)
 
-seoul_bikes_fit <- seoul_bikes_wflow |> 
+seoul_bikes_wflow_2 <- workflow() |> 
+  add_model(seoul_bikes_mod) |> 
+  add_recipe(seoul_bikes_rec_2)
+
+seoul_bikes_fit_1 <- seoul_bikes_wflow_1 |> 
   fit(data = train_data)
 
-seoul_bikes_fit |> 
-  tidy()
-```
-Notice our Linear model has 55 terms including the baseline. This is caused by the factoring by combining the original variables hour and holiday together.
+seoul_bikes_fit_1 |> 
+  tidy() |> 
+  kable(
+    caption = "Model 1: Linear Regression with Hour-Holiday Interaction (55 Terms)",
+    digits = 2
+  )
 
-Below is the expression of our linear model:
+seoul_bikes_fit_2 <- seoul_bikes_wflow_2 |> 
+  fit(data = train_data)
+
+seoul_bikes_fit_2 |> 
+  tidy() |> 
+  kable(
+    caption = "Model 2: Linear Regression without Interaction (32 Terms)",
+    digits = 2
+  )
+```
+Notice our first model (one where we consider the interaction of hour and holiday) has 55 terms including the baseline. This is caused by the factoring by combining the original variables hour and holiday together.
+
+Below is the expression of the model (with each of the slopes rounded to 2 decimal places):
 
 $$
 \begin{aligned}
@@ -245,32 +276,79 @@ $$
 &\quad - 66.15 \times \text{seasons Spring} + 11.12 \times \text{seasons Summer} - 283.33 \times \text{seasons Winter}
 \end{aligned}
 $$
-Notice that 'seasons_Autumn' does not have its own term. This is because the variable has been in a sense absorbed into the baseline.
+For our second model, we still have 32 terms, but this is essentially unavoidable, as there are 24 factors within the hour variable. 
+
+Below is the expression of the second model (with each of the slopes rounded to 2 decimal places):
+
+
+$$
+\begin{aligned}
+\widehat{\text{rented bike count}} &= 728.63 -68.83 \times \text{is weekend} + 20.48 \times \text{temperature c} - 6.73 \times \text{humidity_percent} \\
+&\quad - 245.86 \times \text{precipitation} - 99.47 \times \text{hour_X1} - 197.92 \times \text{hour_X2} + \dots \\
+&\quad + 153.47 \times \text{holiday_No.Holiday} - 66.23 \times \text{seasons_Spring} + 10.31 \times \text{seasons_Summer} \\
+&\quad - 282.22 \times \text{seasons_Winter}
+\end{aligned}
+$$
+
+Notice that 'seasons_Autumn' does not have its own term. This is because the variable has been in a sense absorbed into the baseline (for both models).
 
 Variables are also not in snake_case as latex in RMarkdown provides an output that is not clean.
 
 ### Results and Residual Graphs of Predictions
 ```{r, echo = FALSE}
-seoul_bikes_pred <- predict(seoul_bikes_fit, new_data = test_data) |> 
+seoul_bikes_pred_1 <- predict(seoul_bikes_fit_1, new_data = test_data) |> 
+  bind_cols(test_data |> select(rented_bike_count))
+
+seoul_bikes_pred_2 <- predict(seoul_bikes_fit_2, new_data = test_data) |> 
   bind_cols(test_data |> select(rented_bike_count))
 ```
 
 #### Evaluation Metrics
 ```{r, echo = FALSE}
-seoul_bikes_pred |> 
-  metrics(truth = rented_bike_count, estimate = .pred)
+bikes_metrics <- metric_set(rmse, rsq)
+
+eval_model <- function(pred_df, wflow, model){
+  std_metrics <- pred_df |> 
+    bikes_metrics(truth = rented_bike_count, estimate = .pred) |> 
+    select(.metric, .estimate) |> 
+    pivot_wider(names_from = .metric, values_from = .estimate)
+  
+  n <- nrow(pred_df)
+  p <- nrow(tidy(wflow)) - 1 #-1 because of the baseline
+  min <- min(pred_df$rented_bike_count)
+  max <- max(pred_df$rented_bike_count)
+  
+  std_metrics |> 
+    mutate(
+      model = model,
+      num_terms = p+1, #+1 here as the total number of terms includes the baseline
+      adj_rsq = 1 - ((1 - rsq) * (n-1)) / (n - p - 1),
+      min = min,
+      max = max
+    ) |> 
+    select(model, num_terms, rmse, min, max, rsq, adj_rsq)
+}
+
+bind_rows(
+  eval_model(seoul_bikes_pred_1, seoul_bikes_fit_1, "Model 1"),
+  eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2")
+) |> 
+  kable(digits = 4, caption = "Model Evaluation Metrics (Testing Data)")
 ```
 
-RMSE (410.19): On average (penalising larger errors more heavily), the model's prediction is off by roughly 410 bikes per hour.
+From the above table of evaluative metrics and by Occam's Razor, we will be choosing model 2 as our predictive model, as it involves way fewer terms and has similar performance, as seen from the differences in RMSE, r-squared and adjusted r-squared.
 
-MAE (304.16): Across, all test observations, the typical absolute prediction error is about 304 bikes per hour.
+RMSE: 411.6669 - across test-set observations between 0 and 3404 bikes per hour, this value corresponds to roughly 12.1% of the total demand range.
 
-R^2 (0.578): The model's predictors explain approximately 57.8% of the variance in hourly rented bike counts on unseen test data.
+R-Squared: 0.575 - 57.5% of variance in the hourly rented bike counts is explained by model 2 on our testing dataset.
 
 #### Residual Graph
 
 
 ## Limitations
+
+
+## Generative AI Disclosure
 
 
 

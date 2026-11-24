@@ -14,24 +14,24 @@ This is a template repository for your group project. One of your group members 
 ## Task list
 
 - Tasks: 30th October
-  - Task 1 (Zack) - compare temperature sensitivty during peak hours vs. off-peak hours
+  - Task 1 (Zack) - compare temperature sensitivity during peak hours vs. off-peak hours
   - [X] Separate peak and non-peak hours in dataset (create a new variable and make it a logical variable)
   - [X] Plot temperature_c vs. rented_bike_count, faceted by whether it is a peak hour or not
   - [X] Infer
   
   - Task 2 (Miles) - determine if the drop in demand for rented bikes is consistent across all four seasons when it is a holiday
-  - [] Calculate an average hourly demand, grouped by seasons and holiday
-  - [] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
-  - [] Infer
+  - [X] Calculate an average hourly demand, grouped by seasons and holiday
+  - [X] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
+  - [X] Infer
   
   - Task 3 (Daniel) - Identify if precipitation drops demand linearly or shows a sharp threshold
-  - [] Filter for days where rainfall and snowfall > 0
-  - [] Created box plots of precipitation levels vs. rented_bike_count
-  - [] Infer
+  - [X] Filter for days where rainfall and snowfall > 0
+  - [X] Created box plots of precipitation levels vs. rented_bike_count
+  - [X] Infer
   
   - Task 4 (Ethan) - Analyse interaction effects between temperature and humidity
   - [X] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
-  - [] Infer
+  - [X] Infer
   
 
   - Task 5 (Freddie) - Compare the 24 hour rented bike profile during the week vs. weekends or holidays

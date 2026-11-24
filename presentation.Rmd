@@ -1,7 +1,6 @@
 ---
-title: "Presentation title"
-subtitle: "Presentation subtitle (if any)"
-author: "Team name <br> Names of team members"
+title: "Demand for Rented Bikes in Seoul"
+author: "Group 32 GitChuds <br> Daniel, Ethan, Freddie, Miles and Zack"
 institute: "University of Edinburgh"
 date: "`r Sys.Date()`"
 output:
@@ -31,6 +30,11 @@ library(tidymodels)
 library(palmerpenguins)
 library(knitr)
 library(xaringanthemer)
+library(readr)
+library(janitor)
+library(ggplot2)
+library(scales)
+library(rsample)
 ```
 
 ```{r setup, include=FALSE}
@@ -40,7 +44,14 @@ knitr::opts_chunk$set(fig.retina = 3, dpi = 300, fig.width = 6, fig.asp = 0.618,
 
 ```{r load-data, include=FALSE}
 # Load your data here
+# load data 
+seoul_bikes_raw <- read_csv("data/SeoulBikeData.csv", locale=locale(encoding="latin1"))
+#extracting raw data, locale needed to be specified as error otherwise.
 
+#clean data
+seoul_bikes <- seoul_bikes_raw |> 
+  clean_names() |> #cleaning names to snake_case, as column headings' words initially separated with space
+  select(-functioning_day)
 ```
 
 ```{r include=FALSE}
@@ -53,164 +64,207 @@ style_xaringan(
 
 class: center, middle
 
-## A statement of the overall goal / research question
+## Predicting the Demand for Rented Bikes in Seoul Considering Time and Weather Variables
 
 ---
 
-class: inverse, center, middle
+# Purpose of Predictive Question
 
-# Section title
+- Help maintain a stable supply of bikes for bike-renters.
 
----
-
-# Hello World
-
-- Click the `Knit` button to compile your presentation
-
-- Make sure to commit and push all resulting files to your GitHub repo
+- May be used to project revenues for companies offering bikes for renting.
 
 ---
 
-class: inverse, middle, center
+# Raw Data
 
-# Using xaringan
+- Seoul bikes data set has 8760 observations and 14 features (variables).
 
----
+- Variables are: Rented Bike Count, Hour, Holiday, Temperature(°C), Humidity (%), Rainfall(mm), Snowfall(cm) and other weather-related variables.
 
-# xaringan
-
-- The presentation is created using the `xaringan` package
-
-- Use `---` to separate slides and `--` for incremental builds
-
---
-
-- Like this
-
----
-
-# Layouts
-
-You can use plain text
-
-- or bullet points
-
-.pull-left[
-or text in two columns $^*$
-]
-.pull-right[
-- like
-- this
-]
-
-.footnote[
-[*] And add footnotes
-]
-
----
-
-# Code
-
-```{r boring-regression}
-# a boring regression
-model <- lm(dist ~ speed, data = cars)
-tidy(model)
-glance(model)
+```{r}
+seoul_bikes_raw |> 
+  head(n = 10)
 ```
 
 ---
 
-# Plots
+#Bike Demand vs. Temperature
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+seoul_bikes <- seoul_bikes_raw |> 
+  clean_names() |> #cleaning names to snake_case, as column headings' words initially separated with space
+  select(-functioning_day)
 
-```{r recode-species, echo = FALSE}
-# In this chunk I'm doing a bunch of analysis that I don't want to present 
-# in my slides. But I need the resulting data frame for a plot I want to present.
-iris_modified <- iris %>%
-  mutate(Species = fct_other(Species, keep = "setosa"))
-```
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    peak = ifelse(hour %in% c(7:9, 17:19), TRUE, FALSE)
+  )
 
-```{r plot-iris, echo = FALSE}
-# Code hidden with echo = FALSE
-# Uses modified iris dataset from previous chunk
-# Play around with height and width until you're happy with the look
-ggplot(data = iris_modified, mapping = aes(x = Sepal.Width, y = Sepal.Length, color = Species)) +
-  geom_point() + 
-  theme_minimal() # theme options: https://ggplot2.tidyverse.org/reference/ggtheme.html
-```
-
----
-
-## Plot and text
-
-.pull-left[
-- Some text
-- goes here
-]
-.pull-right[
-```{r warning=FALSE, out.width="100%", fig.width=4, echo=FALSE}
-# see how I changed out.width and fig.width from defaults
-# to make the figure bigger
-ggplot(penguins, aes(x = bill_length_mm, y = species, color = species)) +
-  geom_boxplot() +
-  theme_minimal()
-```
-]
-
----
-
-# Tables
-
-If you want to generate a table, make sure it is in the HTML format (instead of Markdown or other formats), e.g.,
-
-```{r iris-table, echo = FALSE}
-kable(head(iris), format = "html")
+seoul_bikes |> 
+  ggplot(aes(x = temperature_c, y = rented_bike_count)) +
+  geom_jitter(
+    aes(colour = peak),
+    alpha = 0.15
+  ) +
+  geom_smooth(
+    method = "gam",
+    se = FALSE,
+    linewidth = 1.2,
+    colour = "#d95f02"
+    ) +
+  facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
+    holiday ~ peak,
+    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
+    ) +
+  #changes labels from facetting to "Peak" and "Non-Peak"
+  theme_minimal() +
+  scale_colour_manual(
+    guide = "legend",
+    values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
+    labels = c("TRUE" = "Peak", "FALSE" = "Non-Peak")
+    ) +
+  guides(alpha = "none") +
+  labs(
+    x = "Temperature (c)",
+    y = "Number of Rented Bikes Per Hour",
+    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
+    title = "Bike Demand vs. Temperature"
+  )
 ```
 
 ---
 
-# Images
+# Bike Demand vs. Seasons
 
-```{r castle, echo = FALSE, out.width = "55%", fig.align = "center", fig.cap = "Image credit: Photo by Jörg Angeli on Unsplash."}
-include_graphics("img/edinburgh-castle.jpg")
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+#graph here
 ```
+--- 
 
-Or you can also include a full page image. See next slide.
+# Bike Demand vs. Precipitation
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+#graph here
+```
 
 ---
 
+# Feature Engineering & Model Preperation
 
-class: inverse, center, middle
-background-image: url(img/edinburgh-castle.jpg)
-background-size: contain
+- Created precipitation variable - combined rainfall_mm and snowfall_cm for simplicity.
+
+- Introduced is_weekend variable - determines if the day is in the week or in the weekend.
+
+- Factorised hour variable
+
+- Variables for model: rented_bike_count, hour, holiday, is_weekend, temperature_c, humidity_percent, seasons, precipitation.
 ---
 
-# Math Expressions
+# Linear Model
 
-You can write LaTeX math expressions inside a pair of dollar signs, e.g. &#36;\alpha+\beta$ renders $\alpha+\beta$. You can use the display style with double dollar signs:
-
-```
-$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$
-```
-
-$$\bar{X}=\frac{1}{n}\sum_{i=1}^nX_i$$
-
-Limitations:
-
-1. The source code of a LaTeX math expression must be in one line, unless it is inside a pair of double dollar signs, in which case the starting `$$` must appear in the very beginning of a line, followed immediately by a non-space character, and the ending `$$` must be at the end of a line, led by a non-space character;
-
-1. There should not be spaces after the opening `$` or before the closing `$`.
-
-1. Math does not work on the title slide (see [#61](https://github.com/yihui/xaringan/issues/61) for a workaround).
+$$
+\begin{aligned}
+\widehat{\text{rented_bike_count}} &= 728.63 -68.83 \times \text{is_weekend} + 20.48 \times \text{temperature_c} - 6.73 \times \text{humidity_percent} \\
+&\quad - 245.86 \times \text{precipitation} - 99.47 \times \text{hour_X1} - 197.92 \times \text{hour_X2} + \dots \\
+&\quad + 153.47 \times \text{holiday_No.Holiday} - 66.23 \times \text{seasons_Spring} + 10.31 \times \text{seasons_Summer} \\
+&\quad - 282.22 \times \text{seasons_Winter}
+\end{aligned}
+$$
+- 32 terms
+- seaons_Autumn and other terms that seem missing are 'absorbed' into baseline
 
 ---
 
-# Feeling adventurous?
+# Model Evaluation
 
-- Want to find out more about `xaringan`? See https://slides.yihui.name/xaringan/#1.
+```{r, echo = FALSE}
+seoul_bikes_clean <- seoul_bikes |> 
+  mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+    #hour_holiday = interaction(hour, holiday, sep = "_")
+    hour = as.factor(hour)
+  ) |> 
+  select(
+    rented_bike_count,
+    #hour_holiday,
+    hour,
+    holiday,
+    is_weekend,
+    temperature_c,
+    humidity_percent,
+    seasons,
+    precipitation
+  )
 
-- You are welcome to use the default styling of the slides. In fact, that's what I expect majority of you will do. You will differentiate yourself with the content of your presentation.
+set.seed(67)
 
-- But some of you might want to play around with slide styling. The 
-`xaringanthemer` provides some solutions for this that: https://pkg.garrickadenbuie.com/xaringanthemer.
+seoul_bikes_clean_split <- initial_split(seoul_bikes_clean, prop = 0.80)
 
-- And if you want more bells and whistles, there is also `xaringanExtra`: https://pkg.garrickadenbuie.com/xaringanExtra.
+train_data <- training(seoul_bikes_clean_split)
+test_data <- testing(seoul_bikes_clean_split)
+
+seoul_bikes_rec_2 <- recipe(
+  rented_bike_count ~ .,
+  data = train_data
+) |> 
+  step_dummy(all_nominal(), -all_outcomes()) |>
+  step_zv(all_predictors())
+
+seoul_bikes_mod <- linear_reg() |> 
+  set_engine("lm")
+
+seoul_bikes_wflow_2 <- workflow() |> 
+  add_model(seoul_bikes_mod) |> 
+  add_recipe(seoul_bikes_rec_2)
+
+seoul_bikes_fit_2 <- seoul_bikes_wflow_2 |> 
+  fit(data = train_data)
+
+seoul_bikes_pred_2 <- predict(seoul_bikes_fit_2, new_data = test_data) |> 
+  bind_cols(test_data |> select(rented_bike_count))
+
+bikes_metrics <- metric_set(rmse, rsq)
+
+eval_model <- function(pred_df, wflow, model){
+  std_metrics <- pred_df |> 
+    bikes_metrics(truth = rented_bike_count, estimate = .pred) |> 
+    select(.metric, .estimate) |> 
+    pivot_wider(names_from = .metric, values_from = .estimate)
+  
+  n <- nrow(pred_df)
+  p <- nrow(tidy(wflow)) - 1 #-1 because of the baseline
+  min <- min(pred_df$rented_bike_count)
+  max <- max(pred_df$rented_bike_count)
+  
+  std_metrics |> 
+    mutate(
+      model = model,
+      num_terms = p+1, #+1 here as the total number of terms includes the baseline
+      adj_rsq = 1 - ((1 - rsq) * (n-1)) / (n - p - 1),
+      min = min,
+      max = max
+    ) |> 
+    select(model, num_terms, rmse, min, max, rsq, adj_rsq)
+}
+
+eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2") |> 
+  kable(digits = 4, caption = "Model Evaluation Metrics (Testing Data)")
+```
+
+---
+
+# Residual Graph
+
+---
+
+# Limitations
+
+
+
+---
+
+# References
+
+- Easwaramoorthy, Sathishkumar Veerappampalayam . 2020. Seoul Bike Sharing Demand. UCI Machine Learning Repository. https://doi.org/10.24432/C5F62R.
+---

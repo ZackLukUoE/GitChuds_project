@@ -36,13 +36,13 @@ seoul_bikes <- seoul_bikes_raw |>
 
 ## Introduction
 
-In this project, we will be analysing the demand for rented bikes in Seoul, with the aims of **predicting the demand for rented bikes in Seoul considering time and weather variables.** This predictive model will be useful for helping to mainting a stable supply for bike renters, as well as help rented bike companies to project revenues in the future.
+In this project, we will be analysing the demand for rented bikes in Seoul, with the aims of **predicting the demand for rented bikes in Seoul considering time and weather variables.** This predictive model will be useful for helping to maintain a stable supply for bike renters, as well as help rented bike companies to project revenues in the future.
 
 ## Data
 
 ### Raw Dataset
 
-The Seoul rented bikes data set has 8760 observations across 13 features. Each observation records details of the date, hourly bike demand, hour of day, temperature, rainfall, snowfall and other time and weather related-variables.
+The Seoul rented bikes data set has 8760 observations across 14 features. Each observation records details of the date, hourly bike demand, hour of day, temperature, rainfall, snowfall and other time and weather related-variables.
 
 ### Cleaning
 
@@ -117,7 +117,7 @@ seoul_bikes |>
     x = "Temperature (c)",
     y = "Number of Rented Bikes Per Hour",
     colour = "Peak Commuting Hour (7-9am or 5-7pm)",
-    title = "Bike Demand Sensitivity to Temperature"
+    title = "Bike Demand vs. Temperature"
   )
 
 determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
@@ -283,7 +283,7 @@ Below is the expression of the second model (with each of the slopes rounded to 
 
 $$
 \begin{aligned}
-\widehat{\text{rented bike count}} &= 728.63 -68.83 \times \text{is weekend} + 20.48 \times \text{temperature c} - 6.73 \times \text{humidity_percent} \\
+\widehat{\text{rented_bike_count}} &= 728.63 -68.83 \times \text{is_weekend} + 20.48 \times \text{temperature_c} - 6.73 \times \text{humidity_percent} \\
 &\quad - 245.86 \times \text{precipitation} - 99.47 \times \text{hour_X1} - 197.92 \times \text{hour_X2} + \dots \\
 &\quad + 153.47 \times \text{holiday_No.Holiday} - 66.23 \times \text{seasons_Spring} + 10.31 \times \text{seasons_Summer} \\
 &\quad - 282.22 \times \text{seasons_Winter}
@@ -350,9 +350,11 @@ R-Squared: 0.575 - 57.5% of variance in the hourly rented bike counts is explain
 
 ## Generative AI Disclosure
 
+Google Gemini was used during EDA, in particular when writing a reusable helper function for the density plots of temperature vs. density at peak and non-peak commuting hours. 
 
+Additionally, it was also used for the bike demand vs. temperature graph for simplifying an if-statement.
+
+When evaluating performance of the models, Google Gemini was used to aid the computation of adjusted r-squared and the formatting of the output of the metrics, for the tested data.
 
 ## References
 Easwaramoorthy, Sathishkumar Veerappampalayam . 2020. Seoul Bike Sharing Demand. UCI Machine Learning Repository. https://doi.org/10.24432/C5F62R.
-
-

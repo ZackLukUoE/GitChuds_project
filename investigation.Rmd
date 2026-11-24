@@ -21,11 +21,8 @@ library(readr)
 library(janitor)
 library(ggplot2)
 library(scales)
-
 library(lubridate)
-
 library(rsample)
-
 ```
 
 |Raw Variable Name| Clean Variable Name | Data Type| Numerical or Categorical | Description & Units |

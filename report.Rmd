@@ -172,6 +172,75 @@ seoul_bikes |>
 ### Seasons vs. Rented Bike Count considering Holidays
 
 ### Precipitation vs. Rented Bike Count
+# Rainfall box plot: exclude snow to isolate rainfall
+# 3.4 Compare rain and snow separately, keeping dry hours in both plots.
+rain_data <- bikes %>%
+  filter(snowfall_cm == 0)
+
+snow_data <- bikes %>%
+  filter(rainfall_mm == 0)
+```
+```{r}
+# Define precipitation bands
+rain_data <- rain_data %>%
+  mutate(
+    rain_level = case_when(
+      rainfall_mm == 0 ~ "0",
+      rainfall_mm > 0 & rainfall_mm <= 1 ~ "(0, 1]",
+      rainfall_mm > 1 & rainfall_mm <= 5 ~ "(1, 5]",
+      rainfall_mm > 5 & rainfall_mm <= 10 ~ "(5, 10]",
+      rainfall_mm > 10 ~ ">10"
+    ),
+    rain_level = fct_relevel(
+      rain_level,
+      "0", "(0, 1]", "(1, 5]", "(5, 10]", ">10"
+    )
+  )
+
+snow_data <- snow_data %>%
+  mutate(
+    snow_level = case_when(
+      snowfall_cm == 0 ~ "0",
+      snowfall_cm > 0 & snowfall_cm <= 1 ~ "(0, 1]",
+      snowfall_cm > 1 & snowfall_cm <= 3 ~ "(1, 3]",
+      snowfall_cm > 3 & snowfall_cm <= 5 ~ "(3, 5]",
+      snowfall_cm > 5 ~ ">5"
+    ),
+    snow_level = fct_relevel(
+      snow_level,
+      "0", "(0, 1]", "(1, 3]", "(3, 5]", ">5"
+    )
+  )
+# Rainfall box plot: exclude snow to isolate rainfall
+ggplot(
+  data = rain_data,
+  mapping = aes(x = rain_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Bike rentals by rainfall level",
+    x = "Rainfall (mm)",
+    y = "Hourly bike rentals"
+  )
+
+
+# Snowfall box plot: exclude rain to isolate snowfall
+ggplot(
+  data = snow_data,
+  mapping = aes(x = snow_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightgrey") +
+  labs(
+    title = "Bike rentals by snowfall level",
+    x = "Snowfall (cm)",
+    y = "Hourly bike rentals"
+  )
+```
+# on rainfall graph
+Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is greater than 0 and up to 1 mm, a decrease of around 80%. Demand falls more for rainfall above 10 mm, but increases a little. This would mean a steep drop at the beginning and then small changes. Not a straight line drop.
+
+# on snowfall graph
+Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is greater than 0 and up to 1 mm, a decrease of around 80%. Demand falls more for rainfall above 10 mm, but increases a little. This would mean a steep drop at the beginning and then small changes. Not a linear decline.
 
 ### Behaviour of Temperature vs. Humidity whilst considering Rented Bike Count
 

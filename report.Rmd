@@ -189,7 +189,37 @@ Both groups also have the same bimodal, with peaks between approximately 4-11°C
 This also shows how Seoul's seasonal temperature cycles affect peak and non-peak hours relatively equally.
 
 ### Seasons vs. Rented Bike Count considering Holidays
+```{r, echo = FALSE}
+hourly_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday, hour) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+   )
 
+ggplot(hourly_holiday_comparison,
+       aes(x = hour, y = avg_rentals,
+           colour = holiday)) +
+  # Used geom_line() instead of geom_col() because I'm now investigating how rentals change throughout the day.
+  geom_line(linewidth = 1) +
+  # Used facet_wrap() for easier comparison
+  facet_wrap(
+    ~factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+    #added axes = "all_x" by asking GenAi because I wanted all graphs to have x-axis only the bottom 2 originally had it.
+    axes = "all_x"
+  )+
+  scale_x_continuous(breaks = seq(0, 23, 3)) +
+
+  labs(
+     title = "Hourly average bike rentals by season and type of holiday",
+    x = "Hour of day",
+    y = "Average number of bikes rented",
+    colour = "Holiday type"
+  ) +
+  theme_minimal() 
+```
 ### Precipitation vs. Rented Bike Count
 
 #### Rainfall vs. Rented Bike Count

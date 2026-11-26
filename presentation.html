@@ -155,7 +155,13 @@ Table: Model Evaluation Metrics (Testing Data)
 
 # Limitations
 
+1. **Non-linear relationships**: bike demand responds non-linearly to predictors e.g. temperature, hour of day, precipitation.
 
+2. **Loss of precipitation accuracy**: collapsing rainfall and snowfall into a binary variable sacrifices the granularity regarding weather severities.
+
+3. **Impossible negative predictions**: model can predict negative bike counts, which are impossible, considering real values are above 0
+
+4. **Omitted contextual variables**: e.g. public transport disruptions, major local events etc. leaves approximately 42.5% of variance unexplained.
 
 ---
 

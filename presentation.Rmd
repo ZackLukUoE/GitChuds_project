@@ -137,22 +137,48 @@ seoul_bikes |>
 # Bike Demand vs. Seasons
 
 ```{r warning=FALSE, echo=FALSE, message=FALSE}
-#graph here
-```
---- 
+hourly_holiday_comparison <- seoul_bikes %>%
+  group_by(seasons, holiday, hour) %>%
+  summarise(
+    avg_rentals = mean(rented_bike_count, na.rm = TRUE),
+    .groups = "drop"
+   )
 
-# Bike Demand vs. Precipitation
+ggplot(hourly_holiday_comparison,
+       aes(x = hour, y = avg_rentals,
+           colour = holiday)) +
+  # Used geom_line() instead of geom_col() because I'm now investigating how rentals change throughout the day.
+  geom_line(linewidth = 1) +
+  # Used facet_wrap() for easier comparison
+  facet_wrap(
+    ~factor(seasons,
+                      levels = c("Winter", "Spring",
+                                 "Summer", "Autumn")),
+    #added axes = "all_x" by asking GenAi because I wanted all graphs to have x-axis only the bottom 2 originally had it.
+    axes = "all_x"
+  )+
+  scale_x_continuous(breaks = seq(0, 23, 3)) +
+
+  labs(
+    title = "Hourly average bike rentals by season and type of holiday",
+    x = "Hour of day",
+    y = "Average number of bikes rented",
+    colour = "Holiday type"
+  ) +
+  theme_minimal() 
+```
+
+---
+
+
+# Bike Demand vs. Precipitation (Rainfall)
 
 ```{r warning=FALSE, echo=FALSE, message=FALSE}
 # Rainfall box plot: exclude snow to isolate rainfall
 # 3.4 Compare rain and snow separately, keeping dry hours in both plots.
-rain_data <- bikes %>%
+rain_data <- seoul_bikes %>%
   filter(snowfall_cm == 0)
 
-snow_data <- bikes %>%
-  filter(rainfall_mm == 0)
-```
-```{r}
 # Define precipitation bands
 rain_data <- rain_data %>%
   mutate(
@@ -169,6 +195,30 @@ rain_data <- rain_data %>%
     )
   )
 
+
+# Rainfall box plot: exclude snow to isolate rainfall
+ggplot(
+  data = rain_data,
+  mapping = aes(x = rain_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightblue") +
+  theme_minimal() +
+  labs(
+    title = "Bike rentals by rainfall level",
+    x = "Rainfall (mm)",
+    y = "Hourly bike rentals"
+  )
+```
+
+---
+
+
+# Bike Demand vs. Precipitation (Snowfall)
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+snow_data <- seoul_bikes %>%
+  filter(rainfall_mm == 0)
+
 snow_data <- snow_data %>%
   mutate(
     snow_level = case_when(
@@ -183,24 +233,13 @@ snow_data <- snow_data %>%
       "0", "(0, 1]", "(1, 3]", "(3, 5]", ">5"
     )
   )
-# Rainfall box plot: exclude snow to isolate rainfall
-ggplot(
-  data = rain_data,
-  mapping = aes(x = rain_level, y = rented_bike_count)
-) +
-  geom_boxplot(fill = "lightblue") +
-  labs(
-    title = "Bike rentals by rainfall level",
-    x = "Rainfall (mm)",
-    y = "Hourly bike rentals"
-  )
-
 
 # Snowfall box plot: exclude rain to isolate snowfall
 ggplot(
   data = snow_data,
   mapping = aes(x = snow_level, y = rented_bike_count)
 ) +
+  theme_minimal() +
   geom_boxplot(fill = "lightgrey") +
   labs(
     title = "Bike rentals by snowfall level",

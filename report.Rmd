@@ -172,15 +172,12 @@ seoul_bikes |>
 ### Seasons vs. Rented Bike Count considering Holidays
 
 ### Precipitation vs. Rented Bike Count
-# Rainfall box plot: exclude snow to isolate rainfall
-# 3.4 Compare rain and snow separately, keeping dry hours in both plots.
-rain_data <- bikes %>%
+
+#### Rainfall vs. Rented Bike Count
+```{r, echo = FALSE}
+rain_data <- seoul_bikes %>%
   filter(snowfall_cm == 0)
 
-snow_data <- bikes %>%
-  filter(rainfall_mm == 0)
-```
-```{r}
 # Define precipitation bands
 rain_data <- rain_data %>%
   mutate(
@@ -197,6 +194,27 @@ rain_data <- rain_data %>%
     )
   )
 
+# Rainfall box plot: exclude snow to isolate rainfall
+ggplot(
+  data = rain_data,
+  mapping = aes(x = rain_level, y = rented_bike_count)
+) +
+  geom_boxplot(fill = "lightblue") +
+  theme_minimal() +
+  labs(
+    title = "Bike rentals by rainfall level",
+    x = "Rainfall (mm)",
+    y = "Hourly bike rentals"
+  )
+```
+
+Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is greater than 0 and up to 1 mm, a decrease of around 80%. Demand falls more for rainfall above 10 mm, but increases a little. This would mean a steep drop at the beginning and then small changes. Not a straight line drop.
+
+#### Snowfall vs. Rented Bike Count
+```{r, echo = FALSE}
+snow_data <- seoul_bikes %>%
+  filter(rainfall_mm == 0)
+
 snow_data <- snow_data %>%
   mutate(
     snow_level = case_when(
@@ -211,18 +229,6 @@ snow_data <- snow_data %>%
       "0", "(0, 1]", "(1, 3]", "(3, 5]", ">5"
     )
   )
-# Rainfall box plot: exclude snow to isolate rainfall
-ggplot(
-  data = rain_data,
-  mapping = aes(x = rain_level, y = rented_bike_count)
-) +
-  geom_boxplot(fill = "lightblue") +
-  labs(
-    title = "Bike rentals by rainfall level",
-    x = "Rainfall (mm)",
-    y = "Hourly bike rentals"
-  )
-
 
 # Snowfall box plot: exclude rain to isolate snowfall
 ggplot(
@@ -230,16 +236,14 @@ ggplot(
   mapping = aes(x = snow_level, y = rented_bike_count)
 ) +
   geom_boxplot(fill = "lightgrey") +
+  theme_minimal() +
   labs(
     title = "Bike rentals by snowfall level",
     x = "Snowfall (cm)",
     y = "Hourly bike rentals"
   )
 ```
-# on rainfall graph
-Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is greater than 0 and up to 1 mm, a decrease of around 80%. Demand falls more for rainfall above 10 mm, but increases a little. This would mean a steep drop at the beginning and then small changes. Not a straight line drop.
 
-# on snowfall graph
 Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is greater than 0 and up to 1 mm, a decrease of around 80%. Demand falls more for rainfall above 10 mm, but increases a little. This would mean a steep drop at the beginning and then small changes. Not a linear decline.
 
 ### Behaviour of Temperature vs. Humidity whilst considering Rented Bike Count
@@ -339,10 +343,10 @@ Below is the expression of the model (with each of the slopes rounded to 2 decim
 
 $$
 \begin{aligned}
-\widehat{\text{rented bike count}} &= 903.26 - 68.74 \times \text{is weekend} + 20.38 \times \text{temperature c} - 6.70 \times \text{humidity percent} \\
-&\quad - 247.01 \times \text{precipitation} - 80.61 \times \text{hour holiday X1 Holiday} - 99.72 \times \text{hour holiday X2 Holiday} + \dots \\
+\widehat{\text{rented_bike_count}} &= 903.26 - 68.74 \times \text{is_weekend} + 20.38 \times \text{temperature_c} - 6.70 \times \text{humidity_percent} \\
+&\quad - 247.01 \times \text{precipitation} - 80.61 \times \text{hour_holiday_X1_Holiday} - 99.72 \times \text{hour_holiday_X2_Holiday} + \dots \\
 &\quad - 29.98 \times \text{hour holiday X0 No.Holiday} - 132.89 \times \text{hour holiday X1 No.Holiday} + \dots \\
-&\quad - 66.15 \times \text{seasons Spring} + 11.12 \times \text{seasons Summer} - 283.33 \times \text{seasons Winter}
+&\quad - 66.15 \times \text{seasons_Spring} + 11.12 \times \text{seasons_Summer} - 283.33 \times \text{seasons_Winter}
 \end{aligned}
 $$
 For our second model, we still have 32 terms, but this is essentially unavoidable, as there are 24 factors within the hour variable. 
@@ -358,10 +362,6 @@ $$
 &\quad - 282.22 \times \text{seasons_Winter}
 \end{aligned}
 $$
-
-Notice that 'seasons_Autumn' does not have its own term. This is because the variable has been in a sense absorbed into the baseline (for both models).
-
-Variables are also not in snake_case as latex in RMarkdown provides an output that is not clean.
 
 ### Results and Residual Graphs of Predictions
 ```{r, echo = FALSE}

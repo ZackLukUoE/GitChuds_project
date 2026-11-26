@@ -357,7 +357,7 @@ eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2") |>
 ---
 
 # Residual Graph
-```{r}
+```{r warning=FALSE, echo=FALSE, message=FALSE}
 seoul_bikes_aug <- augment(
      seoul_bikes_fit_2,
      new_data = train_data)

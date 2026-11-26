@@ -291,7 +291,7 @@ ggplot(season_holiday_comparison,
 
 
 Observations:
-This grouped bar chart shows how the average bike rentals varies between holidays and non-holidays across the four seasons. Summer has the highest average rentals, with roughly the same number in each category, whereas winter has the lowest. Autumn shows slighlty higher average rentals on holidays while summer shows minimal diffecences. Ocerall, the findings suggest that seasonal variation has stronger association with bike rental  demand rather than holiday status (variation between holiday vs non holiday is small in each season whereas the average bike rentals is bigger)
+This grouped bar chart shows how the average bike rentals varies between holidays and non-holidays across the four seasons. Summer has the highest average rentals, with roughly the same number in each category, whereas winter has the lowest. Autumn shows slighlty higher average rentals on holidays while summer shows minimal differences. Ocerall, the findings suggest that seasonal variation has stronger association with bike rental  demand rather than holiday status (variation between holiday vs non holiday is small in each season whereas the average bike rentals is bigger)
 Seasons   Holiday        avg_rentals
 1 Autumn  Holiday           948.
 2 Autumn  No Holiday        923.
@@ -355,6 +355,8 @@ Next steps - write out cleaner observations
 Explore: 
 Can temperature explain the seasonal differences in this demand?
 How does it link to the big question.
+
+
 ##Task 3
 
 Identify if precipitation drops demand linearly or shows a sharp threshold

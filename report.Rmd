@@ -82,7 +82,7 @@ Below is a variable table of the clean data:
 
 ### Temperature vs. Number of Rented Bikes in Specific Time Windows
 
-```{r, echo = FALSE}
+```{r, message = FALSE, echo = FALSE, fig.width = 10, fig.height = 4.5, out.width = "100%"}
 seoul_bikes <- seoul_bikes |> 
   mutate(
     peak = ifelse(hour %in% c(7:9, 17:19), TRUE, FALSE)
@@ -107,6 +107,9 @@ seoul_bikes |>
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +
+  theme(
+    panel.spacing.x = unit(1.5, "cm") # Increases horizontal gap between the two columns
+  ) +
   scale_colour_manual(
     guide = "legend",
     values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
@@ -119,7 +122,17 @@ seoul_bikes |>
     colour = "Peak Commuting Hour (7-9am or 5-7pm)",
     title = "Bike Demand vs. Temperature"
   )
+```
 
+In the graph above, we first see that no matter the time period or day (i.e holiday vs. non-holiday), that the demanded for rented bikes increases as temperatures increases, with its optimal range at approximately 25-28°C.
+
+After that range, demand begins to drop off.
+
+Additionally, demand is substantially higher during peak hours on working days, vs. non-peak hours on working days, as they have maximum values of approximately 3600 versus 2600 rented bikes at their peaks.
+
+However, this gap disappears on holidays, where the maximum values for rented bike demand during peak and non-peak hours are within the range of 2200-2400 rented bikes.
+
+```{r, echo = FALSE}    
 determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
   density_df <- df |>
     filter({{ max_var }} == max_var_condition) |>
@@ -140,9 +153,7 @@ determine_density_maxes <- function(df, max_var, max_var_condition, density_var)
     #returns values in tibble form
 }
 #needed to use {{}} as passing in the column names and not variable objects - Gemini was used, as it was initially causing errors
-```
 
-```{r, echo = FALSE}    
 peak_maxes<- determine_density_maxes(seoul_bikes, peak, TRUE, temperature_c)
 non_peak_maxes <- determine_density_maxes(seoul_bikes, peak, FALSE, temperature_c)
 #followed the following guide: https://ianmadd.github.io/pages/PeakDensityDistribution.html
@@ -168,6 +179,14 @@ seoul_bikes |>
     #needed str_wrap to ensure the entire title shows on the plot
   )
 ```
+
+The both graphs are almost overlapping. This means that peak and non-peak commuting hours overlap almost completely across the entire temperature range (-20-40°C).
+
+This means that higher bike demand seen during working-day peak hours are actually driven by commuting behaviour, rather than due to peak hours occuring during warmer weather. In other words, temperature is not a confounding factor.
+
+Both groups also have the same bimodal, with peaks between approximately 4-11°C and 21-22°C, and a small dip in between. This reflects Seoul's climate of long, hot summers and long, cold winters, where the autumn and spring seasons are shorter.
+
+This also shows how Seoul's seasonal temperature cycles affect peak and non-peak hours relatively equally.
 
 ### Seasons vs. Rented Bike Count considering Holidays
 

@@ -59,7 +59,7 @@ precipitation — has values 1 or 0, used to indicate if there was any forms of 
 is_weekend — determines if the day is a weekday or during the weekend.
 
 peak — determines if the hour of day is a peak commuting time. We have defined this to be 7-9am and 5-7pm. This is the engineered variable that will be removed after exploratory data analysis (EDA).
-
+seoul
 ### Key Predictors
 
 For our model the following variables are what we will consider: rented_bike_count, hour, holiday, is_weekend, temperature_c, humidity_percent, seasons and precipitation.
@@ -443,6 +443,37 @@ RMSE: 411.6669 - across test-set observations between 0 and 3404 bikes per hour,
 R-Squared: 0.575 - 57.5% of variance in the hourly rented bike counts is explained by model 2 on our testing dataset.
 
 #### Residual Graph
+
+```{r}
+seoul_bikes_aug <- augment(
+     seoul_bikes_fit_2,
+     new_data = train_data)
+
+ggplot(seoul_bikes_aug, aes(x = .pred, y = .resid)) +
+     geom_point(alpha = 0.5) +
+     geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+     labs(
+         x = "Predicted Rental Bike Count",
+         y = "Residuals",
+         title = "Residuals vs Predicted Rental Bike Count"
+     ) +
+  theme_minimal()
+
+seoul_bikes_aug_test <- augment(
+  seoul_bikes_fit_2,
+  new_data = test_data)
+
+ggplot(seoul_bikes_aug_test, aes(x = .pred, y = .resid)) +
+     geom_point(alpha = 0.5) +
+     geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+     labs(
+       x = "Predicted Rental Bike Count (Test Data)", 
+       y = "Residuals",
+       title = "Residuals vs Predicted Bike Count (Test Data)"
+     ) +
+  theme_minimal()
+```
+
 
 
 ## Limitations

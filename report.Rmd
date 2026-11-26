@@ -220,6 +220,18 @@ ggplot(hourly_holiday_comparison,
   ) +
   theme_minimal() 
 ```
+
+
+I learned that the temperature and season variables play an important role in predicting bike rental demand in Seoul. Demand is highest during summer and lowest during winter, suggesting that temperature affects people’s willingness to cycle. In addition, on non-holidays, demand consistently peaks around 8 am and 6 pm, reflecting typical commuting hours, while on holidays demand tends to increase more gradually throughout the day. These patterns indicate that the relationship between time of day and bike rental demand varies depending on the season and whether it is a holiday.
+
+Therefore, incorporating both these variables into our predictive model could improve its accuracy, and through further modeling  we could determine the individual impact of specific weather factors such as temperature, rainfall, and humidity.
+
+
+
+
+
+
+
 ### Precipitation vs. Rented Bike Count
 
 #### Rainfall vs. Rented Bike Count

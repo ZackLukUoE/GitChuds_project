@@ -6,7 +6,7 @@ This is a template repository for your group project. One of your group members 
 
 - Ethan Wallis (s297963), Ewallis08
 - Zack Luk (s2777947), ZackLukUoE
--
+- Miles Miller (s2960115), Milesmiller100636
 -
 -
 

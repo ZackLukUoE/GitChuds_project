@@ -464,7 +464,7 @@ seoul_bikes_fit_3 <- seoul_bikes_wflow_3 |>
 seoul_bikes_fit_3 |> 
   tidy() |> 
   kable(
-    caption = "Model 3: Polynomial Terms",
+    caption = "Model 3: Splines",
     digits = 2
   )
 
@@ -500,7 +500,6 @@ Below are some summary statistics that compare the predicted values of models 1,
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 prediction <- function(fitted_df, data){
   predict({{ fitted_df }}, new_data = {{ data }}) |> 
-    mutate(.pred = pmax(0, .pred)) |> 
     bind_cols(test_data |>  select(rented_bike_count))
 }
 

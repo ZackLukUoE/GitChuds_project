@@ -273,7 +273,7 @@ $$
 \end{aligned}
 $$
 - 32 terms
-- seaons_Autumn and other terms that seem missing are 'absorbed' into baseline
+- seasons_Autumn and other terms that seem missing are 'absorbed' into baseline
 
 ---
 

@@ -522,9 +522,9 @@ RMSE: 411.6669 - across test-set observations between 0 and 3404 bikes per hour,
 
 R-Squared: 0.575 - 57.5% of variance in the hourly rented bike counts is explained by model 2 on our testing dataset.
 
-#### Residual Graph
+#### Residual Graphs
 
-```{r}
+```{r, echo = FALSE}
 seoul_bikes_aug <- augment(
      seoul_bikes_fit_2,
      new_data = train_data)
@@ -558,14 +558,13 @@ ggplot(seoul_bikes_aug_test, aes(x = .pred, y = .resid)) +
 
 ## Limitations
 
-1. **Bike-demand is non-linear** when considered with multiple variables within the dataset, e.g. temperature, hour of day, precipitation etc.
+1. **Bike-demand is non-linear** when considered with multiple variables within the dataset, e.g. temperature, hour of day, precipitation etc. This is also proven by the residual graphs.
 
 2. Combining variables for simplicity into a binary variable of the model, namely the use of precipitation **decreases the accuracy** of our model.
 
 3. **Model can predict negative bike counts**, which are impossible, considering real values are above 0
 
 4. **Omitted contextual variables**, e.g. public transport disruptions, major local events etc. leaves approximately 42.5% of variance unexplained.
-
 
 ## Generative AI Disclosure
 

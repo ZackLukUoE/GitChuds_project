@@ -5,7 +5,7 @@ This is a template repository for your group project. One of your group members 
 ## Team members
 
 - Ethan Wallis (s297963), Ewallis08
--
+- Zack Luk (s2777947), ZackLukUoE
 -
 -
 -

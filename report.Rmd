@@ -566,6 +566,10 @@ ggplot(seoul_bikes_aug_test, aes(x = .pred, y = .resid)) +
 
 4. **Omitted contextual variables**, e.g. public transport disruptions, major local events etc. leaves approximately 42.5% of variance unexplained.
 
+## Conclusion
+
+Overall, our investigation demonstrated that both time and weather variables are useful in predicting bike rental demand in Seoul. Demand is generally higher during warmer weather, summer months and peak commuting hours, while rainfall, snowfall and colder temperatures are associated with lower demand. Our linear regression model achieved a testing R-squared value of 0.575, indicating moderate predictive performance. Hypothesis testing also showed that 26 out of 31 slope coefficients were statistically significant at the 5% significance level before adjusting for multiple testing. However, the model has several limitations, including non-linear relationships, loss of information regarding precipitation severity and negative predictions. Despite these limitations, our model provides a useful starting point for predicting bike rental demand, which could help bike rental companies manage their bike supply and estimate future revenues. Further improvements could be made by incorporating additional variables and exploring more flexible modelling techniques.
+
 ## Generative AI Disclosure
 
 Google Gemini was used during EDA, in particular when writing a reusable helper function for the density plots of temperature vs. density at peak and non-peak commuting hours. 

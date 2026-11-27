@@ -503,12 +503,10 @@ Looking at the graph, we can see that bikes are rented most when temperature is 
 
 
 ##Task 5
- if this shows then my commits are finally going through
+
+#used genAI to help with creating variables to run code 
 
 ```{r}
-
-seoul_bikes
-
 seoul_bikes <- seoul_bikes %>%
   mutate(
     day_type = if_else(
@@ -519,12 +517,13 @@ seoul_bikes <- seoul_bikes %>%
     )
   )
 
+
 ```
 
 ```{r}
 
-hour_profile <- seoul_bikes %>%
-group_by(day_type, hour) %>%
+hour_profile <- seoul_bikes |>
+group_by(day_type, hour) |>
 summarise( 
 mean_rented_bikes = mean(`rented_bike_count`,na.rm = TRUE),
 .groups = "drop"
@@ -534,15 +533,16 @@ ggplot(hour_profile, aes(x = hour, y = mean_rented_bikes, colour = day_type)) +
 geom_line() +
 labs(x = "Hour", y = "Mean rented bikes", colour = "Day type"
 ) +
+  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
 theme_minimal()
 
-hour_profile %>%
-group_by(day_type) %>%
+hour_profile |>
+group_by(day_type) |>
 slice_max(mean_rented_bikes, n = 1)
 
 ```
 
-The graph shows that weekday and weekend bike rentals follow different pattern throughout the day. Wekkday rentals have a sharp morning peak at 8 am, followed by a decrease before rising again to its highest point at 6pm, with an average of 1724 rentals. Weekend/holiday rentals increase more gradually throughout the day, reaching the highest point at 5pm, with an average of 1161 rentals. Overall, weekday rentals are generally higher during peak commuting hours, while weekend/holiday rentals are more evenly spread throughout the day. This suggests that weekday bike usage is most influenced by commuting patterns. Another noticeable difference is that weekday rentals rise much more sharply between 6am and 8am, suggesting increased demand during the morning commute. In contrast, weekend/ holiday rentals reach higher levels later in the morning and afternoon but without the sudden increase. During the early hours of the morning, both day types experince relatively low rental numbers, with the lowest levels occurring around 4-5 am. Towards the end of the day, rentals decrease for both groups, particularly after 10pm. These differences suggest that the time of day has an important influence on bike rental demand, and that the reasons for using bikes differs between weekdays and weekends.
+The graph shows that weekday and weekend bike rentals follow different pattern throughout the day. Wekkday rentals have a sharp morning peak at 8 am, followed by a decrease before rising again to its highest point at 6pm, with an average of 1724 rentals. Weekend/holiday rentals increase more gradually throughout the day, reaching the highest point at 5pm, with an average of 1161 rentals. Overall, weekday rentals are generally higher during peak commuting hours, while weekend/holiday rentals are more evenly spread throughout the day. This suggests that weekday bike usage is most influenced by commuting patterns. Another noticeable difference is that weekday rentals rise much more sharply between 6am and 8am, suggesting increased demand during the morning commute. In contrast, weekend/ holiday rentals reach higher levels later in the morning and afternoon but without the sudden increase. During the early hours of the morning, both day types experince relatively low rental numbers, with the lowest levels occurring around 4-5 am. Towards the end of the day, rentals decrease for both groups, particularly after 10pm. These differences suggest that the time of day has an important influence on bike rental demand, and that the reasons for using bikes differs between weekdays and weekends/holidays. 
 
 ## Splitting Data for Model Training
 ```{r}

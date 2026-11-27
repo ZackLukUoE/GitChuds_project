@@ -358,20 +358,6 @@ eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2") |>
 
 # Residual Graph
 ```{r warning=FALSE, echo=FALSE, message=FALSE}
-seoul_bikes_aug <- augment(
-     seoul_bikes_fit_2,
-     new_data = train_data)
-
-ggplot(seoul_bikes_aug, aes(x = .pred, y = .resid)) +
-     geom_point(alpha = 0.5) +
-     geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
-     labs(
-         x = "Predicted Rental Bike Count",
-         y = "Residuals",
-         title = "Residuals vs Predicted Rental Bike Count"
-     ) +
-  theme_minimal()
-
 seoul_bikes_aug_test <- augment(
   seoul_bikes_fit_2,
   new_data = test_data)
@@ -391,7 +377,7 @@ ggplot(seoul_bikes_aug_test, aes(x = .pred, y = .resid)) +
 
 # Limitations
 
-1. **Non-linear relationships**: bike demand responds non-linearly to predictors e.g. temperature, hour of day, precipitation.
+1. **Non-linear relationships**: bike demand responds non-linearly to predictors e.g. temperature, hour of day, precipitation; residual graphs supports this conclusion.
 
 2. **Loss of precipitation accuracy**: collapsing rainfall and snowfall into a binary variable sacrifices the granularity regarding weather severities.
 

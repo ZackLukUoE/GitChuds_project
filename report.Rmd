@@ -347,7 +347,7 @@ slice_max(mean_rented_bikes, n = 1)
 
 ```
 
-The mean rented bike count on weekdays (working days) has two abrupt peaks at 8am and 6pm with its 6pm peak coming in at 1766 rentals on average, which can be equated to the fact that an average working day is 9am-5pm. The weekend and holiday mean rented bike count however follows a sinusoidal curve, with its peak coming at 5pm with a calculated mean of 1140 bike rentals. Both have a similar shape when the weekday peaks are disregarded so evidently the working day has an incredible effect on average bikes rented per hour.
+The mean rented bike count on weekdays (working days) has two abrupt peaks at 8am and 6pm with its 6pm peak coming in at 1766 rentals on average, which can be equated to the fact that an average working day is 9am-5pm. The weekend and holiday mean rented bike count however follows a sinusoidal curve, with its peak coming at 5pm with a calculated mean of 1140 bike rentals. Both have a similar shape when the weekday peaks are disregarded so evidently the working day has an incredible effect on the demand for bikes rented per hour.
 
 ## Modelling
 

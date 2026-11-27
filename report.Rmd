@@ -311,6 +311,44 @@ Median hourly rentals drop from 643 under dry conditions to 127 when rainfall is
 
 ### Behaviour of Rented Bike Count on Weekdays Compared to Weekends & Holidays
 
+```{r}
+seoul_bikes <- seoul_bikes %>%
+  mutate(
+    day_type = if_else(
+      lubridate::wday(as.Date(date, format = "%d/%m/%Y"),
+                      week_start = 1) >= 6 | holiday == "Holiday",
+      "Weekend/Holiday",
+      "Weekday"
+    )
+  )
+
+
+```
+
+```{r}
+
+hour_profile <- seoul_bikes |>
+group_by(day_type, hour) |>
+summarise( 
+mean_rented_bikes = mean(`rented_bike_count`,na.rm = TRUE),
+.groups = "drop"
+)
+
+ggplot(hour_profile, aes(x = hour, y = mean_rented_bikes, colour = day_type)) +
+geom_line() +
+labs(x = "Hour", y = "Mean rented bikes", colour = "Day type"
+) +
+  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
+theme_minimal()
+
+hour_profile |>
+group_by(day_type) |>
+slice_max(mean_rented_bikes, n = 1)
+
+```
+
+The mean rented bike count on weekdays (working days) has two abrupt peaks at 8am and 6pm with its 6pm peak coming in at 1766 rentals on average, which can be equated to the fact that an average working day is 9am-5pm. The weekend and holiday mean rented bike count however follows a sinusoidal curve, with its peak coming at 5pm with a calculated mean of 1140 bike rentals. Both have a similar shape when the weekday peaks are disregarded so evidently the working day has an incredible effect on average bikes rented per hour.
+
 ## Modelling
 
 ### Simplified Dataset

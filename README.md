@@ -31,21 +31,25 @@ This is a template repository for your group project. One of your group members 
   - [X] Calculate an average hourly demand, grouped by seasons and holiday
   - [X] Plot a bar chart, use geom_col(position = "dodge") to create plots side by side
   - [X] Infer
+  - [ ] Hypothesis testing
   
   - Task 3 (Daniel) - Identify if precipitation drops demand linearly or shows a sharp threshold
   - [X] Filter for days where rainfall and snowfall > 0
   - [X] Created box plots of precipitation levels vs. rented_bike_count
   - [X] Infer
+  - [ ] Hypothesis testing
   
   - Task 4 (Ethan) - Analyse interaction effects between temperature and humidity
   - [X] Use a heatmap (geom_bin_2d() or geom_tile()) with temperature and humidity being on the axes, and rented_bike_count as a fill argument
   - [X] Infer
+  - [ ] Infer residual plots
   
 
   - Task 5 (Freddie) - Compare the 24 hour rented bike profile during the week vs. weekends or holidays
   - [X] Use the working day variable to separate weekdays and weekends/ holidays
   - [X] Create a line plot with axes hour vs. mean_rented_bikes coloured by working day
   - [X] Infer
+  - [ ] Hypothesis Testing
   
 - Big Question
 Predicting the deamnd for rented bikes in Seoul considering time and weather variables.

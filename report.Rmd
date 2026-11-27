@@ -364,14 +364,15 @@ seoul_bikes_clean <- seoul_bikes |>
   ) |> 
   select(
     rented_bike_count,
-    #hour_holiday,
     hour,
     holiday,
     is_weekend,
     temperature_c,
     humidity_percent,
     seasons,
-    precipitation
+    precipitation,
+    solar_radiation_mj_m2,
+    wind_speed_m_s
   )
 
 seoul_bikes_clean |> 
@@ -397,6 +398,7 @@ seoul_bikes_rec_1 <- recipe(
   rented_bike_count ~ .,
   data = train_data
 ) |> 
+  step_rm(solar_radiation_mj_m2, wind_speed_m_s) |> 
   step_dummy(all_nominal(), -all_outcomes()) |> 
   step_interact(terms = ~ starts_with("hour_"):starts_with("holiday_")) |> 
   step_zv(all_predictors())
@@ -405,7 +407,20 @@ seoul_bikes_rec_2 <- recipe(
   rented_bike_count ~ .,
   data = train_data
 ) |> 
+  step_rm(solar_radiation_mj_m2, wind_speed_m_s) |> 
   step_dummy(all_nominal(), -all_outcomes()) |>
+  step_zv(all_predictors())
+
+seoul_bikes_rec_3 <- recipe(
+  rented_bike_count ~ .,
+  data = train_data
+) |> 
+  step_mutate(hour = as.numeric(as.character(hour))) |> 
+  step_ns(hour, deg_free = 6) |> 
+  step_poly(humidity_percent, solar_radiation_mj_m2, degree = 2) |> 
+  step_dummy(all_nominal(), -all_outcomes()) |> 
+  step_interact(terms = ~ starts_with("hour_ns"):temperature_c +
+                          starts_with("hour_ns"):is_weekend) |> 
   step_zv(all_predictors())
 
 seoul_bikes_mod <- linear_reg() |> 
@@ -418,6 +433,10 @@ seoul_bikes_wflow_1 <- workflow() |>
 seoul_bikes_wflow_2 <- workflow() |> 
   add_model(seoul_bikes_mod) |> 
   add_recipe(seoul_bikes_rec_2)
+
+seoul_bikes_wflow_3 <- workflow() |> 
+  add_model(seoul_bikes_mod) |> 
+  add_recipe(seoul_bikes_rec_3)
 
 seoul_bikes_fit_1 <- seoul_bikes_wflow_1 |> 
   fit(data = train_data)
@@ -439,6 +458,15 @@ seoul_bikes_fit_2 |>
     digits = 2
   )
 
+seoul_bikes_fit_3 <- seoul_bikes_wflow_3 |> 
+  fit(data = train_data)
+
+seoul_bikes_fit_3 |> 
+  tidy() |> 
+  kable(
+    caption = "Model 3: Polynomial Terms",
+    digits = 2
+  )
 
 ```
 
@@ -470,15 +498,20 @@ $$
 Below are some summary statistics that compare the predicted values of models 1, 2 and the real rented_bike_counts.
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
-seoul_bikes_pred_1 <- predict(seoul_bikes_fit_1, new_data = test_data) |> 
-  bind_cols(test_data |> select(rented_bike_count))
+prediction <- function(fitted_df, data){
+  predict({{ fitted_df }}, new_data = {{ data }}) |> 
+    mutate(.pred = pmax(0, .pred)) |> 
+    bind_cols(test_data |>  select(rented_bike_count))
+}
 
-seoul_bikes_pred_2 <- predict(seoul_bikes_fit_2, new_data = test_data) |> 
-  bind_cols(test_data |> select(rented_bike_count))
+seoul_bikes_pred_1 <- prediction(seoul_bikes_fit_1, test_data)
+seoul_bikes_pred_2 <- prediction(seoul_bikes_fit_2, test_data)
+seoul_bikes_pred_3 <- prediction(seoul_bikes_fit_3, test_data)
 
 tibble(
   `Model 1 Pred` = seoul_bikes_pred_1$.pred,
   `Model 2 Pred` = seoul_bikes_pred_2$.pred,
+  `Model 3 Pred` = seoul_bikes_pred_3$.pred,
   `Real Bike Count` = test_data$rented_bike_count
 ) |> 
   tidy()
@@ -512,7 +545,8 @@ eval_model <- function(pred_df, wflow, model){
 
 bind_rows(
   eval_model(seoul_bikes_pred_1, seoul_bikes_fit_1, "Model 1"),
-  eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2")
+  eval_model(seoul_bikes_pred_2, seoul_bikes_fit_2, "Model 2"),
+  eval_model(seoul_bikes_pred_3, seoul_bikes_fit_3, "Model 3"),
 ) |> 
   kable(digits = 4, caption = "Model Evaluation Metrics (Testing Data)")
 ```
@@ -527,7 +561,7 @@ R-Squared: 0.575 - 57.5% of variance in the hourly rented bike counts is explain
 
 ```{r, echo = FALSE}
 seoul_bikes_aug <- augment(
-     seoul_bikes_fit_2,
+     seoul_bikes_fit_3,
      new_data = train_data)
 
 ggplot(seoul_bikes_aug, aes(x = .pred, y = .resid)) +
@@ -541,7 +575,7 @@ ggplot(seoul_bikes_aug, aes(x = .pred, y = .resid)) +
   theme_minimal()
 
 seoul_bikes_aug_test <- augment(
-  seoul_bikes_fit_2,
+  seoul_bikes_fit_3,
   new_data = test_data)
 
 ggplot(seoul_bikes_aug_test, aes(x = .pred, y = .resid)) +

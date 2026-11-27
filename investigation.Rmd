@@ -591,23 +591,23 @@ To simplify the model, we might want to group variables together into new ones, 
 
 ```{r}
 #We merge rainfall and snowfall variables together, and consider weekdays & weekends, and also join hour and holiday together as their behaviours are different based on whether it is a holiday or not.
-seoul_bikes <- seoul_bikes |> 
-  mutate(
-    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
-    is_weekend   = wday(dmy(date)) %in% c(1, 7),
-    hour_holiday = interaction(hour, holiday, sep = "_")
-  ) |> 
-  select(
-    rented_bike_count,
-    hour_holiday,
-    is_weekend,
-    temperature_c,
-    humidity_percent,
-    seasons,
-    precipitation
-  )
+#seoul_bikes <- seoul_bikes |> 
+#  mutate(
+#    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+#    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+#    hour_holiday = interaction(hour, holiday, sep = "_")
+#  ) |> 
+#  select(
+#    rented_bike_count,
+#    hour_holiday,
+#    is_weekend,
+#    temperature_c,
+#    humidity_percent,
+#    precipitation
+#    seasons,
+#  )
 
-seoul_bikes
+#seoul_bikes
 ```
 
 ## Initial Plots
@@ -681,6 +681,8 @@ ggplot(seoul_bikes,
 ```
 
 ```{r}
+seoul_bikes
+
 scatter_plot <- function(df, x, y){
   df |> 
       ggplot(aes({{ x }}, {{ y }})) +
@@ -694,11 +696,30 @@ bar_plot <- function(df, x, y){
     geom_col()
 }
 
-scatter_plot(seoul_bikes, hour, rented_bike_count)
+#scatter_plot(seoul_bikes, hour, rented_bike_count)
 scatter_plot(seoul_bikes, temperature_c, rented_bike_count)
 scatter_plot(seoul_bikes, humidity_percent, rented_bike_count)
 scatter_plot(seoul_bikes, rainfall_mm, rented_bike_count)
 scatter_plot(seoul_bikes, snowfall_cm, rented_bike_count)
 bar_plot(seoul_bikes, seasons, rented_bike_count)
 bar_plot(seoul_bikes, holiday, rented_bike_count)
+```
+
+
+```{r}
+seoul_bikes_clean <- seoul_bikes |> 
+    mutate(
+    precipitation = ifelse(rainfall_mm > 0 | snowfall_cm > 0, 1, 0),
+    is_weekend   = wday(dmy(date)) %in% c(1, 7),
+  ) |> 
+  select(
+    rented_bike_count,
+    hour,
+    holiday,
+    is_weekend,
+    temperature_c,
+    humidity_percent,
+    precipitation,
+    seasons,
+  )
 ```

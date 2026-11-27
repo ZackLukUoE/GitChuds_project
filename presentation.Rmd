@@ -111,7 +111,7 @@ seoul_bikes |>
     ) +
   facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
     holiday ~ peak,
-    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
+    labeller = as_labeller(c("TRUE" = "Peak (7-9am and 5-7pm)", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +
@@ -123,11 +123,10 @@ seoul_bikes |>
     values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
     labels = c("TRUE" = "Peak", "FALSE" = "Non-Peak")
     ) +
-  guides(alpha = "none") +
+  guides(alpha = "none", colour = "none") +
   labs(
     x = "Temperature (c)",
     y = "Number of Rented Bikes Per Hour",
-    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
     title = "Bike Demand vs. Temperature"
   )
 ```

@@ -103,7 +103,7 @@ seoul_bikes |>
     ) +
   facet_grid( #changed to facet_grid to take holidays into account, not taking weekdays vs. weekends into account as there many weekend workers in Seoul who may need to commute
     holiday ~ peak,
-    labeller = as_labeller(c("TRUE" = "Peak", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
+    labeller = as_labeller(c("TRUE" = "Peak (7-9am and 5-7pm)", "FALSE" = "Non-Peak", "Holiday" = "Holiday", "No Holiday" = "Working Day"))
     ) +
   #changes labels from facetting to "Peak" and "Non-Peak"
   theme_minimal() +
@@ -115,11 +115,10 @@ seoul_bikes |>
     values = c("TRUE" = "#384860", "FALSE" = "#97a6c4"), #changed colour to lighter shades, as otherwise points are too dark
     labels = c("TRUE" = "Peak", "FALSE" = "Non-Peak")
     ) +
-  guides(alpha = "none") +
+  guides(alpha = "none", colour = "none") +
   labs(
     x = "Temperature (c)",
     y = "Number of Rented Bikes Per Hour",
-    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
     title = "Bike Demand vs. Temperature"
   )
 ```
@@ -174,7 +173,7 @@ seoul_bikes |>
   labs(
     x = "Temperature (c)",
     y = "Density",
-    colour = "Peak Commuting Hour (7-9am or 6-7pm)",
+    colour = "Peak Commuting Hour (7-9am or 5-7pm)",
     title = stringr::str_wrap("Temperature Distribution Comparison : Peak and Non-Peak Commuting Hours")
     #needed str_wrap to ensure the entire title shows on the plot
   )
@@ -439,6 +438,8 @@ seoul_bikes_fit_2 |>
     caption = "Model 2: Linear Regression without Interaction (32 Terms)",
     digits = 2
   )
+
+
 ```
 
 Below is the expression of the first model (with each of the slopes rounded to 2 decimal places):
@@ -572,11 +573,51 @@ Overall, our investigation demonstrated that both time and weather variables are
 
 ## Generative AI Disclosure
 
-Google Gemini was used during EDA, in particular when writing a reusable helper function for the density plots of temperature vs. density at peak and non-peak commuting hours. 
+Google Gemini was used during EDA, in particular when writing a reusable helper function for the density plots of temperature vs. density at peak and non-peak commuting hours.The specific line is shown below:
 
-Additionally, it was also used for the bike demand vs. temperature graph for simplifying an if-statement.
+```{r, eval = FALSE}
+determine_density_maxes <- function(df, max_var, max_var_condition, density_var){ #parameters to keep generality of function
+  density_df <- df |>
+  filter({{ max_var }} == max_var_condition)
+  ##...
+}
+```
 
-When evaluating performance of the models, Google Gemini was used to aid the computation of adjusted r-squared and the formatting of the output of the metrics, for the tested data.
+Additionally, it was also used for the bike demand vs. temperature graph for simplifying an if-statement. The specific line is shown below:
+
+```{r}
+seoul_bikes <- seoul_bikes |> 
+  mutate(
+    peak = ifelse(hour %in% c(7:9, 17:19), TRUE, FALSE)
+    #used Gemini to help with shortening the conditional statement, as initially was hour == 7 | hour == 8 | ... 
+  )
+```
+
+When evaluating performance of the models, Google Gemini was used to aid the computation of adjusted r-squared and the formatting of the output of the metrics, for the tested data. The specific chunk is shown below:
+
+```{r}
+eval_model <- function(pred_df, wflow, model){
+  std_metrics <- pred_df |> 
+    bikes_metrics(truth = rented_bike_count, estimate = .pred) |> 
+    select(.metric, .estimate) |> 
+    pivot_wider(names_from = .metric, values_from = .estimate)
+  
+  n <- nrow(pred_df)
+  p <- nrow(tidy(wflow)) - 1 #-1 because of the baseline
+  min <- min(pred_df$rented_bike_count)
+  max <- max(pred_df$rented_bike_count)
+  
+  std_metrics |> 
+    mutate(
+      model = model,
+      num_terms = p+1, #+1 here as the total number of terms includes the baseline
+      adj_rsq = 1 - ((1 - rsq) * (n-1)) / (n - p - 1),
+      min = min,
+      max = max
+    ) |> 
+    select(model, num_terms, rmse, min, max, rsq, adj_rsq)
+}
+```
 
 ## References
 Easwaramoorthy, Sathishkumar Veerappampalayam . 2020. Seoul Bike Sharing Demand. UCI Machine Learning Repository. https://doi.org/10.24432/C5F62R.

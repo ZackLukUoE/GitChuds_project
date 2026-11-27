@@ -680,3 +680,25 @@ ggplot(seoul_bikes,
   theme_minimal()
 ```
 
+```{r}
+scatter_plot <- function(df, x, y){
+  df |> 
+      ggplot(aes({{ x }}, {{ y }})) +
+      geom_point() +
+      geom_smooth(se = FALSE)
+}
+
+bar_plot <- function(df, x, y){
+  df |> 
+    ggplot(aes({{ x }}, {{ y }})) +
+    geom_col()
+}
+
+scatter_plot(seoul_bikes, hour, rented_bike_count)
+scatter_plot(seoul_bikes, temperature_c, rented_bike_count)
+scatter_plot(seoul_bikes, humidity_percent, rented_bike_count)
+scatter_plot(seoul_bikes, rainfall_mm, rented_bike_count)
+scatter_plot(seoul_bikes, snowfall_cm, rented_bike_count)
+bar_plot(seoul_bikes, seasons, rented_bike_count)
+bar_plot(seoul_bikes, holiday, rented_bike_count)
+```
